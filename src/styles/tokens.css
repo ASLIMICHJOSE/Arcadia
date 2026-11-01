@@ -1,0 +1,258 @@
+/**
+ * Arcadia Design Tokens
+ * Neoclassical luxury gaming aesthetic design system.
+ * Custom CSS properties for colors, glassmorphism, typography scales, spacing, and transitions.
+ */
+
+:root {
+  /* Core Color Palette */
+  --background: #100F0D;
+  --background-secondary: #191713;
+  --surface: #211C16;
+  --surface-elevated: #2B241C;
+  --surface-card: rgba(33, 28, 22, 0.72);
+  --surface-overlay: rgba(16, 15, 13, 0.85);
+
+  /* Glassmorphism System */
+  --glass: rgba(255, 255, 255, 0.075);
+  --glass-hover: rgba(255, 255, 255, 0.11);
+  --glass-active: rgba(255, 255, 255, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-hover: rgba(197, 164, 109, 0.4);
+  --glass-border-gold: rgba(197, 164, 109, 0.25);
+  --glass-blur: 16px;
+  --glass-blur-lg: 24px;
+
+  /* Metallic & Accent Tones */
+  --gold: #C5A46D;
+  --gold-light: #DFCA9B;
+  --gold-dark: #9F7F48;
+  --gold-muted: rgba(197, 164, 109, 0.18);
+  --bronze: #80613C;
+  --bronze-light: #A58055;
+  --bronze-dark: #5A4226;
+  --amber: #E5A93C;
+
+  /* Semantic State Colors */
+  --success: #4EAD7B;
+  --success-bg: rgba(78, 173, 123, 0.15);
+  --warning: #E09F3E;
+  --warning-bg: rgba(224, 159, 62, 0.15);
+  --danger: #D64545;
+  --danger-bg: rgba(214, 69, 69, 0.15);
+  --info: #4F86C6;
+  --info-bg: rgba(79, 134, 198, 0.15);
+
+  /* Typography Colors */
+  --text-primary: #F3EBDD;
+  --text-secondary: #B8AA96;
+  --text-muted: #7E7260;
+  --text-inverse: #100F0D;
+  --text-gold: #C5A46D;
+
+  /* Gradients */
+  --gold-gradient: linear-gradient(135deg, #C5A46D 0%, #80613C 100%);
+  --gold-gradient-hover: linear-gradient(135deg, #DFCA9B 0%, #9F7F48 100%);
+  --gold-gradient-radial: radial-gradient(circle at center, rgba(197, 164, 109, 0.2) 0%, rgba(16, 15, 13, 0) 70%);
+  --gold-gradient-subtle: linear-gradient(135deg, rgba(197, 164, 109, 0.14) 0%, rgba(128, 97, 60, 0.05) 100%);
+  --surface-gradient: linear-gradient(180deg, rgba(33, 28, 22, 0.85) 0%, rgba(25, 23, 19, 0.95) 100%);
+  --dark-gradient: linear-gradient(180deg, #191713 0%, #100F0D 100%);
+
+  /* Shadows & Glows */
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.55);
+  --gold-glow-sm: 0 0 12px rgba(197, 164, 109, 0.25);
+  --gold-glow: 0 0 24px rgba(197, 164, 109, 0.35);
+  --gold-glow-lg: 0 0 40px rgba(197, 164, 109, 0.45);
+
+  /* Border Radii */
+  --border-radius-xs: 4px;
+  --border-radius-sm: 8px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 24px;
+  --border-radius-2xl: 32px;
+  --border-radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Spacing Scale */
+  --space-0: 0px;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+  --space-24: 6rem;    /* 96px */
+
+  /* Typography Scale */
+  --font-serif: var(--font-playfair), 'Playfair Display', Georgia, serif;
+  --font-sans: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  --font-size-3xl: 1.875rem;   /* 30px */
+  --font-size-4xl: 2.25rem;    /* 36px */
+  --font-size-5xl: 3rem;       /* 48px */
+  --font-size-6xl: 3.75rem;    /* 60px */
+
+  /* Z-Index Layers */
+  --z-negative: -1;
+  --z-base: 0;
+  --z-elevated: 10;
+  --z-dropdown: 20;
+  --z-sticky: 30;
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-popover: 60;
+  --z-toast: 70;
+}
+
+/* Glassmorphism System Utilities */
+.glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-panel-hover {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--glass-shadow);
+  transition: all var(--transition-base);
+}
+
+.glass-panel-hover:hover {
+  background: var(--glass-hover);
+  border-color: var(--glass-border-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--glass-shadow-lg), var(--gold-glow-sm);
+}
+
+.glass-card {
+  background: var(--surface-card);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--glass-shadow);
+  transition: all var(--transition-base);
+}
+
+.glass-card:hover {
+  background: rgba(43, 36, 28, 0.85);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-lg), var(--gold-glow-sm);
+  transform: translateY(-3px);
+}
+
+.glass-pill {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-full);
+  padding: 0.35rem 0.85rem;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.glass-pill:hover {
+  background: var(--glass-hover);
+  border-color: var(--gold);
+  color: var(--text-primary);
+}
+
+/* Luxury Gold Utilities */
+.gold-gradient-text {
+  background: var(--gold-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.gold-border {
+  border: 1px solid var(--gold);
+}
+
+.gold-border-glow {
+  border: 1px solid var(--gold);
+  box-shadow: var(--gold-glow-sm);
+}
+
+.gold-glow {
+  box-shadow: var(--gold-glow);
+}
+
+.gold-btn {
+  background: var(--gold-gradient);
+  color: #100F0D;
+  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(197, 164, 109, 0.25);
+  transition: all var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.gold-btn:hover {
+  background: var(--gold-gradient-hover);
+  box-shadow: 0 6px 20px rgba(197, 164, 109, 0.4), var(--gold-glow-sm);
+  transform: translateY(-1px);
+}
+
+.gold-btn:active {
+  transform: translateY(0);
+}
+
+.gold-btn-secondary {
+  background: var(--glass);
+  color: var(--gold);
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--gold);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  transition: all var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.gold-btn-secondary:hover {
+  background: rgba(197, 164, 109, 0.15);
+  border-color: var(--gold-light);
+  color: var(--text-primary);
+  box-shadow: var(--gold-glow-sm);
+  transform: translateY(-1px);
+}
