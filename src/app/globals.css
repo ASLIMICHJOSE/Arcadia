@@ -1,26 +1,21 @@
 @import "tailwindcss";
 @import "../styles/tokens.css";
 
-@theme inline {
-  --color-background: var(--background);
-  --color-background-secondary: var(--background-secondary);
-  --color-surface: var(--surface);
-  --color-surface-elevated: var(--surface-elevated);
-  --color-surface-card: var(--surface-card);
-  --color-gold: var(--gold);
-  --color-gold-light: var(--gold-light);
-  --color-gold-dark: var(--gold-dark);
-  --color-bronze: var(--bronze);
-  --color-bronze-light: var(--bronze-light);
-  --color-bronze-dark: var(--bronze-dark);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-muted: var(--text-muted);
-  --color-glass-border: var(--glass-border);
-  --color-glass: var(--glass);
-  --font-serif: var(--font-playfair);
-  --font-sans: var(--font-inter);
-}
+/* Utility Color Mapping for Design Tokens */
+.bg-background { background-color: var(--background); }
+.bg-background-secondary { background-color: var(--background-secondary); }
+.bg-surface { background-color: var(--surface); }
+.bg-surface-elevated { background-color: var(--surface-elevated); }
+.bg-surface-card { background-color: var(--surface-card); }
+.text-gold { color: var(--gold); }
+.text-gold-light { color: var(--gold-light); }
+.text-gold-dark { color: var(--gold-dark); }
+.text-bronze { color: var(--bronze); }
+.text-text-primary { color: var(--text-primary); }
+.text-text-secondary { color: var(--text-secondary); }
+.text-text-muted { color: var(--text-muted); }
+.border-gold { border-color: var(--gold); }
+.border-glass { border-color: var(--glass-border); }
 
 /* Base Document Styles */
 html {

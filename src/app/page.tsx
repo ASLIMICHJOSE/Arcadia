@@ -78,18 +78,17 @@ export default function HomePage() {
             <img
               src="/images/hero-western.jpg"
               alt="Cinematic Western Landscape at Dusk"
-              className="w-full h-full object-cover object-center scale-105 filter brightness-[0.44] contrast-[1.18] saturate-[1.12]"
+              className="w-full h-full object-cover object-center scale-105 filter brightness-[0.72] contrast-[1.12] saturate-[1.2]"
             />
           </div>
 
-          {/* Multi-layered Western Dusk Cinematic Sky Gradient */}
+          {/* Translucent Western Atmospheric Dusk Vignette */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background: `
-                radial-gradient(ellipse 90% 60% at 50% 62%, rgba(229, 169, 60, 0.22) 0%, rgba(142, 62, 18, 0.18) 35%, transparent 75%),
-                radial-gradient(ellipse 120% 80% at 50% 100%, rgba(197, 164, 109, 0.25) 0%, rgba(104, 44, 16, 0.2) 45%, rgba(16, 15, 13, 0.95) 90%),
-                linear-gradient(180deg, #120F16 0%, #1D151D 24%, #321B19 46%, #4A2314 62%, #2B160F 78%, #100F0D 100%)
+                radial-gradient(ellipse 90% 70% at 50% 50%, rgba(16, 15, 13, 0.25) 0%, rgba(16, 15, 13, 0.65) 65%, #100F0D 100%),
+                linear-gradient(180deg, rgba(16, 15, 13, 0.45) 0%, transparent 35%, rgba(16, 15, 13, 0.55) 75%, #100F0D 100%)
               `,
             }}
           />
@@ -140,7 +139,7 @@ export default function HomePage() {
             variants={heroContainer}
             initial="hidden"
             animate="show"
-            className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center pt-16 sm:pt-20"
+            className="relative z-10 max-w-4xl mx-auto px-6 py-10 sm:px-12 sm:py-14 text-center flex flex-col items-center rounded-3xl backdrop-blur-xl bg-black/40 border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.7),0_0_40px_rgba(197,164,109,0.15)] mx-4 sm:mx-auto mt-8"
           >
             {/* Small Gold Tagline */}
             <motion.div variants={heroItem} className="mb-4 sm:mb-6">
@@ -181,7 +180,7 @@ export default function HomePage() {
                 <span>Explore Games</span>
               </Link>
               <Link
-                href="/register"
+                href="/signup"
                 className="gold-btn-secondary w-full sm:w-auto px-8 py-3.5 text-base font-medium transition-all"
               >
                 <Sparkles className="w-4 h-4 text-[var(--gold)]" />
