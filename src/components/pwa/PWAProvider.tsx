@@ -84,16 +84,24 @@ export function PWAProvider({ children }: PWAProviderProps) {
 
   // Register service worker and handle lifecycle updates
   useEffect(() => {
-    if (
-      typeof window === 'undefined' ||
-      !('serviceWorker' in navigator) ||
-      process.env.NODE_ENV === 'development'
-    ) {
-      // In development or if unsupported, still check SW if available
-      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-        navigator.serviceWorker
-          .register('/sw.js')
-          .catch((err) => console.debug('[PWA] SW dev registration:', err));
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+      return;
+    }
+
+    // In development mode, automatically unregister active service workers and clear caches
+    // so Turbopack hot reloading and fresh CSS styles are never blocked by stale cache.
+    if (process.env.NODE_ENV === 'development') {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const reg of registrations) {
+          reg.unregister();
+        }
+      });
+      if ('caches' in window) {
+        caches.keys().then((keys) => {
+          for (const key of keys) {
+            caches.delete(key);
+          }
+        });
       }
       return;
     }
