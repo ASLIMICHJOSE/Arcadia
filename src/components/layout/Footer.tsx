@@ -11,7 +11,8 @@ import {
   Heart,
 } from 'lucide-react';
 import { ArcadiaLogo } from './Navbar';
-import { NAV_LINKS, FEATURED_GAMES } from '@/lib/constants';
+import { NAV_LINKS } from '@/lib/constants';
+import { playBlip } from '@/lib/sound';
 
 // Clean SVG Brand Icons
 const TwitterIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
@@ -49,37 +50,40 @@ const SOCIAL_LINKS: readonly FooterSocialLink[] = [
 const GAMES_LINKS = [
   { label: 'Tic-Tac-Toe', href: '/games/tic-tac-toe', tag: 'Turn-based' },
   { label: 'Snake', href: '/games/snake', tag: 'Fast-paced' },
-  { label: 'Memory Match', href: '/games/memory-match', tag: 'Puzzle' },
+  { label: 'Memory Match', href: '/games/memory-match', tag: 'Tactical' },
   { label: 'Rock Paper Scissors', href: '/games/rock-paper-scissors', tag: 'Mindgame' },
 ];
 
 const SUPPORT_LINKS = [
-  { label: 'Help Center', href: '/help' },
-  { label: 'Contact', href: '/contact' },
-  { label: 'Privacy Policy', href: '/privacy' },
-  { label: 'Terms of Service', href: '/terms' },
+  { label: 'Community Hub', href: '/community' },
+  { label: 'Leaderboards', href: '/leaderboard' },
+  { label: 'Game Discovery', href: '/discover' },
+  { label: 'Player Dashboard', href: '/dashboard' },
 ];
 
 export function Footer() {
   return (
-    <footer className="w-full bg-[var(--background-secondary)] border-t border-[var(--glass-border)] text-[var(--text-secondary)] relative overflow-hidden">
-      {/* Subtle background ambient radial gradient */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-48 bg-[radial-gradient(ellipse_at_top,_var(--gold)_0%,_transparent_70%)] opacity-[0.04] pointer-events-none" />
+    <footer className="w-full bg-[#0D0B09] border-t border-[rgba(240,163,82,0.18)] text-[var(--text-secondary)] relative overflow-hidden font-sans">
+      {/* Top amber flare line */}
+      <div className="top-amber-flare" />
+
+      {/* Subtle background ambient warm amber glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-48 bg-[radial-gradient(ellipse_at_top,_#F0A352_0%,_transparent_70%)] opacity-[0.06] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
         {/* 4-Column Responsive Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 pb-14 border-b border-[var(--glass-border)]/60">
-          {/* Column 1: Arcadia Logo, Tagline & Social Links */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 pb-14 border-b border-[rgba(240,163,82,0.12)]">
+          {/* Column 1: Brand & Social Links */}
           <div className="flex flex-col space-y-5 lg:pr-4">
             <ArcadiaLogo />
             <p className="text-sm leading-relaxed text-[var(--text-secondary)] font-normal">
-              The premier neoclassical gaming arena. Reimagining timeless strategy and arcade classics for a new era of competitive prestige and global glory.
+              The premier cinematic gaming arena. Reimagining timeless strategy and arcade classics for a new era of competitive prestige and global duels.
             </p>
 
             {/* Social icons */}
             <div className="flex items-center gap-2 pt-2">
               {SOCIAL_LINKS.map((item) => {
-                const IconComponent = item.icon;
+                const Icon = item.icon;
                 return (
                   <a
                     key={item.name}
@@ -87,65 +91,51 @@ export function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Arcadia on ${item.name}`}
-                    className="w-9 h-9 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-elevated)] border border-[var(--glass-border)] hover:border-[var(--gold)]/50 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--gold)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_0_12px_rgba(197,164,109,0.2)]"
+                    className="w-9 h-9 rounded-lg bg-[var(--surface-primary)] border border-[rgba(240,163,82,0.2)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[#FFF8F0] hover:border-[var(--accent-primary)] hover:bg-[var(--surface-secondary)] transition-all duration-200"
                   >
-                    <IconComponent className="w-4 h-4" />
+                    <Icon className="w-4 h-4" />
                   </a>
                 );
               })}
             </div>
           </div>
 
-          {/* Column 2: Platform Links */}
-          <div className="flex flex-col space-y-4">
-            <h3
-              className="font-serif text-sm font-semibold tracking-wider text-[var(--text-primary)] uppercase flex items-center gap-2"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)]" />
+          {/* Column 2: Navigation Links */}
+          <div>
+            <h4 className="font-heading text-sm font-bold text-[#FFF8F0] uppercase tracking-wider mb-5">
               Platform
-            </h3>
-            <ul className="space-y-2.5">
+            </h4>
+            <ul className="space-y-3">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--gold)] hover:translate-x-1 transition-all duration-200"
+                    onClick={() => playBlip()}
+                    className="text-sm text-[var(--text-secondary)] hover:text-[#FFF8F0] transition-colors duration-150 inline-flex items-center gap-1.5 group"
                   >
                     <span>{link.label}</span>
+                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-[var(--accent-primary)]" />
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link
-                  href="/dashboard"
-                  className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--gold)] hover:translate-x-1 transition-all duration-200"
-                >
-                  <span>Player Dashboard</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 opacity-60" />
-                </Link>
-              </li>
             </ul>
           </div>
 
-          {/* Column 3: Games Links */}
-          <div className="flex flex-col space-y-4">
-            <h3
-              className="font-serif text-sm font-semibold tracking-wider text-[var(--text-primary)] uppercase flex items-center gap-2"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)]" />
-              Classic Games
-            </h3>
-            <ul className="space-y-2.5">
+          {/* Column 3: Featured Games */}
+          <div>
+            <h4 className="font-heading text-sm font-bold text-[#FFF8F0] uppercase tracking-wider mb-5">
+              Featured Titles
+            </h4>
+            <ul className="space-y-3">
               {GAMES_LINKS.map((game) => (
-                <li key={game.href}>
+                <li key={game.label}>
                   <Link
                     href={game.href}
-                    className="group inline-flex items-center justify-between w-full max-w-[200px] text-sm text-[var(--text-secondary)] hover:text-[var(--gold)] hover:translate-x-1 transition-all duration-200"
+                    onClick={() => playBlip()}
+                    className="text-sm text-[var(--text-secondary)] hover:text-[#FFF8F0] transition-colors duration-150 flex items-center justify-between group"
                   >
                     <span>{game.label}</span>
-                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-[var(--surface)] text-[var(--text-muted)] group-hover:text-[var(--gold)] group-hover:bg-[var(--gold)]/10 transition-colors">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--surface-primary)] border border-[rgba(240,163,82,0.2)] text-[var(--text-muted)] group-hover:border-[var(--accent-primary)] group-hover:text-[#FFF8F0] transition-colors">
                       {game.tag}
                     </span>
                   </Link>
@@ -154,54 +144,47 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Column 4: Support Links */}
-          <div className="flex flex-col space-y-4">
-            <h3
-              className="font-serif text-sm font-semibold tracking-wider text-[var(--text-primary)] uppercase flex items-center gap-2"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--gold)]" />
-              Support & Legal
-            </h3>
-            <ul className="space-y-2.5">
-              {SUPPORT_LINKS.map((item) => (
-                <li key={item.href}>
+          {/* Column 4: Sanctuary Overview */}
+          <div>
+            <h4 className="font-heading text-sm font-bold text-[#FFF8F0] uppercase tracking-wider mb-5">
+              Player Hub
+            </h4>
+            <ul className="space-y-3 mb-6">
+              {SUPPORT_LINKS.map((link) => (
+                <li key={link.label}>
                   <Link
-                    href={item.href}
-                    className="inline-flex items-center text-sm text-[var(--text-secondary)] hover:text-[var(--gold)] hover:translate-x-1 transition-all duration-200"
+                    href={link.href}
+                    onClick={() => playBlip()}
+                    className="text-sm text-[var(--text-secondary)] hover:text-[#FFF8F0] transition-colors duration-150 inline-flex items-center gap-1.5"
                   >
-                    <span>{item.label}</span>
+                    <span>{link.label}</span>
                   </Link>
                 </li>
               ))}
             </ul>
 
-            {/* Fair play commitment badge */}
-            <div className="pt-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--glass-border)] text-xs text-[var(--text-muted)]">
-                <ShieldCheck className="w-3.5 h-3.5 text-[var(--gold)]" />
-                <span>Fair Play Certified</span>
+            {/* Fair Play Emblem */}
+            <div className="p-3.5 rounded-xl bg-[var(--surface-primary)] border border-[rgba(240,163,82,0.2)] flex items-center gap-3">
+              <ShieldCheck className="w-5 h-5 text-[var(--accent-primary)] shrink-0" />
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-[#FFF8F0]">Fair Play Guaranteed</span>
+                <span className="text-[11px] text-[var(--text-muted)]">Verified deterministic matches</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar: Copyright 2024 Arcadia, "Crafted with passion for gaming" */}
+        {/* Bottom Bar: Copyright & Compliance */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© 2024 Arcadia. All rights reserved.</p>
+          <p>
+            &copy; {new Date().getFullYear()} Arcadia Gaming Hub. All rights reserved.
+          </p>
 
-          <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
-            <span>Crafted with passion for gaming</span>
-            <Sparkles className="w-3.5 h-3.5 text-[var(--gold)] inline-block" />
-          </div>
-
-          {/* Operational status */}
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          <div className="flex items-center gap-6">
+            <span>PWA Ready &bull; Offline Supported</span>
+            <span className="flex items-center gap-1.5">
+              Crafted for players <Heart className="w-3 h-3 text-[var(--accent-primary)] fill-[var(--accent-primary)]" />
             </span>
-            <span className="text-[var(--text-muted)] text-[11px] font-mono">Arena Online</span>
           </div>
         </div>
       </div>

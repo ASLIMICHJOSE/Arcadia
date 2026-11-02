@@ -34,8 +34,8 @@ export function ConnectionStatus() {
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className={`fixed top-0 left-0 right-0 z-[100] h-9 px-4 flex items-center justify-center gap-2 text-xs font-semibold tracking-wide uppercase shadow-lg border-b backdrop-blur-md ${
             !isOnline
-              ? 'bg-[#E5A93C] text-[#100F0D] border-[#C5A46D]/60'
-              : 'bg-[#4EAD7B] text-[#100F0D] border-[#388E3C]/60'
+              ? 'bg-[#E34242] text-white border-white/20'
+              : 'bg-[#2E7D32] text-white border-white/20'
           }`}
           role="status"
           aria-live="polite"
@@ -43,12 +43,12 @@ export function ConnectionStatus() {
           {!isOnline ? (
             <>
               <WifiOff size={15} strokeWidth={2.4} />
-              <span>You are currently offline. Running in local cache mode.</span>
+              <span>You are currently offline. Running in local cached client mode.</span>
             </>
           ) : (
             <>
               <Wifi size={15} strokeWidth={2.4} />
-              <span>Back online. Syncing frontier telemetry...</span>
+              <span>Back online. Syncing multiplayer lobbies and standings...</span>
             </>
           )}
         </motion.div>

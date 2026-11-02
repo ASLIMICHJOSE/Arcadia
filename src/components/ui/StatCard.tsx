@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import GlassPanel from './GlassPanel';
 
@@ -30,7 +29,6 @@ export const StatCard: React.FC<StatCardProps> = ({
   helperText,
   delay = 0,
 }) => {
-  // Parse trend data whether provided as an object or primitive string/number
   const parsedTrend = React.useMemo(() => {
     if (!trend && trend !== 0) return null;
 
@@ -61,41 +59,35 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <GlassPanel
       hover
+      showFlare
       padding="lg"
-      className={`flex flex-col justify-between overflow-hidden relative group ${className}`}
+      className={`flex flex-col justify-between overflow-hidden relative group bg-[var(--surface-primary)] border border-[rgba(240,163,82,0.2)] hover:border-[var(--accent-primary)] ${className}`}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.35, delay, ease: [0.4, 0, 0.2, 1] }}
     >
-      {/* Background radial highlight on hover */}
+      {/* Background warm amber highlight on hover */}
       <div
         className="pointer-events-none absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl"
         style={{
-          background: 'radial-gradient(circle, rgba(197, 164, 109, 0.18) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(240, 163, 82, 0.25) 0%, transparent 70%)',
         }}
       />
 
-      {/* Top Header: Icon & Optional Trend Badge */}
+      {/* Top Header: Icon & Trend Badge */}
       <div className="flex items-center justify-between mb-4">
-        <div
-          className="w-12 h-12 rounded-[var(--border-radius-md,12px)] flex items-center justify-center text-[var(--gold)] transition-transform duration-300 group-hover:scale-105"
-          style={{
-            background: 'var(--gold-muted, rgba(197, 164, 109, 0.18))',
-            border: '1px solid var(--glass-border-gold, rgba(197, 164, 109, 0.25))',
-            boxShadow: 'var(--gold-glow-sm)',
-          }}
-        >
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[var(--accent-primary)]/15 border border-[var(--accent-primary)]/30 text-[var(--accent-primary)] transition-transform duration-300 group-hover:scale-105 shadow-[0_0_12px_rgba(240,163,82,0.25)]">
           <Icon className="w-6 h-6 shrink-0" strokeWidth={2} />
         </div>
 
         {parsedTrend && (
           <div
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border transition-colors ${
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border ${
               parsedTrend.isUp === true
-                ? 'text-[var(--success)] bg-[var(--success-bg)] border-[rgba(78,173,123,0.3)]'
+                ? 'text-[#34D399] bg-[#34D399]/15 border-[#34D399]/30'
                 : parsedTrend.isUp === false
-                ? 'text-[var(--danger)] bg-[var(--danger-bg)] border-[rgba(214,69,69,0.3)]'
-                : 'text-[var(--text-secondary)] bg-[var(--glass)] border-[var(--glass-border)]'
+                ? 'text-[#E34242] bg-[#E34242]/15 border-[#E34242]/30'
+                : 'text-[var(--text-secondary)] bg-[var(--surface-secondary)] border-[var(--border-subtle)]'
             }`}
           >
             {parsedTrend.isUp === true && <TrendingUp className="w-3.5 h-3.5" />}
@@ -109,15 +101,12 @@ export const StatCard: React.FC<StatCardProps> = ({
         )}
       </div>
 
-      {/* Metric Content */}
+      {/* Metric Content with Manrope ExtraBold */}
       <div className="mt-1">
-        <div
-          className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-[var(--text-primary)]"
-          style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-        >
+        <div className="text-3xl md:text-4xl font-heading font-black tracking-tight text-[#FFF8F0]">
           {value}
         </div>
-        <div className="text-xs md:text-sm font-medium tracking-wider uppercase text-[var(--text-secondary)] mt-1.5">
+        <div className="text-xs md:text-sm font-semibold tracking-wider uppercase text-[var(--text-secondary)] mt-1.5 font-heading">
           {label}
         </div>
         {helperText && (

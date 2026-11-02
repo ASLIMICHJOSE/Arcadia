@@ -74,10 +74,7 @@ export const GameGrid: React.FC<GameGridProps> = ({
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             {title && (
               <div>
-                <h2
-                  className="text-2xl md:text-3xl font-serif font-bold text-[var(--text-primary)] tracking-tight"
-                  style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-                >
+                <h2 className="text-2xl md:text-3xl font-heading font-bold text-[var(--text-primary)] tracking-tight">
                   {title}
                 </h2>
                 {subtitle && (
@@ -95,8 +92,7 @@ export const GameGrid: React.FC<GameGridProps> = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search arena games..."
-                  className="w-full pl-10 pr-9 py-2.5 text-sm rounded-[var(--border-radius-md,12px)] bg-[var(--glass)] border border-[var(--glass-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)] transition-all"
-                  style={{ backdropFilter: 'blur(12px)' }}
+                  className="w-full pl-10 pr-9 py-2.5 text-sm rounded-xl bg-[var(--surface-primary)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)] transition-all"
                 />
                 {searchQuery && (
                   <button
@@ -114,24 +110,18 @@ export const GameGrid: React.FC<GameGridProps> = ({
           {/* Category Filter Chips */}
           {showFilters && (
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none pt-2">
-              <SlidersHorizontal className="w-4 h-4 text-[var(--gold)] mr-1 shrink-0 hidden sm:block" />
+              <SlidersHorizontal className="w-4 h-4 text-[var(--accent-primary)] mr-1 shrink-0 hidden sm:block" />
               {CATEGORIES.map((category) => {
                 const isActive = selectedCategory === category;
                 return (
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-200 shrink-0 border cursor-pointer select-none ${
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 shrink-0 border cursor-pointer select-none ${
                       isActive
-                        ? 'border-[var(--gold)] text-[var(--gold-light)] shadow-[var(--gold-glow-sm)] font-semibold'
-                        : 'border-[var(--glass-border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--glass-border-hover)] hover:bg-[var(--glass-hover)]'
+                        ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white shadow-[0_0_14px_rgba(227,66,66,0.35)]'
+                        : 'bg-[var(--surface-secondary)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-white hover:border-[rgba(255,255,255,0.2)]'
                     }`}
-                    style={{
-                      background: isActive
-                        ? 'var(--gold-muted, rgba(197, 164, 109, 0.2))'
-                        : 'var(--glass, rgba(255, 255, 255, 0.05))',
-                      backdropFilter: 'blur(8px)',
-                    }}
                   >
                     {category}
                   </button>
@@ -161,15 +151,12 @@ export const GameGrid: React.FC<GameGridProps> = ({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center p-12 text-center rounded-[var(--border-radius-xl,24px)] border border-[var(--glass-border)] bg-[var(--glass)] backdrop-blur-md"
+            className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-primary)] backdrop-blur-md"
           >
-            <div className="w-16 h-16 rounded-full flex items-center justify-center bg-[var(--surface-elevated)] text-[var(--gold)] mb-4 border border-[var(--glass-border)]">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-[var(--surface-secondary)] text-[var(--accent-primary)] mb-4 border border-[var(--border-subtle)] shadow-[0_0_16px_rgba(227,66,66,0.15)]">
               <Gamepad2 className="w-8 h-8" />
             </div>
-            <h3
-              className="text-lg font-serif font-bold text-[var(--text-primary)] mb-1"
-              style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-            >
+            <h3 className="text-lg font-heading font-bold text-[var(--text-primary)] mb-1">
               No Titles Located
             </h3>
             <p className="text-sm text-[var(--text-secondary)] max-w-sm mb-6">

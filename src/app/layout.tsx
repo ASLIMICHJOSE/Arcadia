@@ -6,7 +6,7 @@ import { ConnectionStatus } from "@/components/pwa/ConnectionStatus";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 
 export const viewport: Viewport = {
-  themeColor: "#100F0D",
+  themeColor: "#0D0B09",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -14,10 +14,10 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Arcadia — Premium Gaming Platform",
+    default: "Arcadia — Premium Gaming Hub",
     template: "%s | Arcadia",
   },
-  description: "Experience classical strategy and timeless arcade games on Arcadia. Compete on global leaderboards, earn gilded achievements, and challenge players worldwide.",
+  description: "Experience classical strategy and tactical arcade games on Arcadia. Compete on global leaderboards, earn prestige badges, and duel players worldwide in a cinematic Western gaming arena.",
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.ico",
@@ -28,8 +28,8 @@ export const metadata: Metadata = {
     title: "Arcadia",
   },
   openGraph: {
-    title: "Arcadia — Premium Gaming Platform",
-    description: "Step into Arcadia's neoclassical gaming arena. Play classic titles, compete on global leaderboards, and unlock prestigious achievements.",
+    title: "Arcadia — Premium Gaming Hub",
+    description: "Step into Arcadia's cinematic gaming client. Play classic titles, compete on global leaderboards, and unlock prestigious achievements.",
     siteName: "Arcadia",
     type: "website",
   },
@@ -51,11 +51,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-[var(--background)] text-[var(--text-primary)] font-sans antialiased flex flex-col selection:bg-[var(--gold)]/30 selection:text-white">
+      <body className="min-h-screen bg-[var(--app-background)] text-[var(--text-primary)] font-sans antialiased flex flex-col selection:bg-[var(--accent-primary)]/30 selection:text-white">
         <PWAProvider>
           <ConnectionStatus />
           {children}

@@ -4,8 +4,9 @@ import React, { forwardRef } from 'react';
 import Link from 'next/link';
 import { motion, HTMLMotionProps } from 'framer-motion';
 import { Loader2, LucideIcon } from 'lucide-react';
+import { playBlip, playEngage } from '@/lib/sound';
 
-export type ButtonVariant = 'gold' | 'outline' | 'ghost';
+export type ButtonVariant = 'gold' | 'crimson' | 'outline' | 'ghost';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface PrimaryButtonProps extends Omit<HTMLMotionProps<'button'>, 'children' | 'style'> {
@@ -26,22 +27,26 @@ export interface PrimaryButtonProps extends Omit<HTMLMotionProps<'button'>, 'chi
 
 const variantStyles: Record<ButtonVariant, string> = {
   gold:
-    'text-[#100F0D] font-semibold border border-[rgba(255,255,255,0.25)] ' +
-    'shadow-[0_4px_16px_rgba(197,164,109,0.28)] ' +
-    'hover:shadow-[0_6px_24px_rgba(197,164,109,0.45),var(--gold-glow-sm)]',
+    'text-[#0D0B09] font-bold border border-white/30 ' +
+    'shadow-[0_4px_16px_rgba(240,163,82,0.4)] ' +
+    'hover:shadow-[0_6px_24px_rgba(240,163,82,0.6),0_0_16px_rgba(240,163,82,0.3)]',
+  crimson:
+    'text-white font-bold border border-white/20 ' +
+    'shadow-[0_4px_16px_rgba(227,66,66,0.35)] ' +
+    'hover:shadow-[0_6px_24px_rgba(227,66,66,0.5),0_0_16px_rgba(227,66,66,0.3)]',
   outline:
-    'bg-transparent text-[var(--gold)] border border-[var(--gold)] ' +
-    'hover:bg-[rgba(197,164,109,0.12)] hover:border-[var(--gold-light)] ' +
-    'hover:shadow-[var(--gold-glow-sm)] hover:text-[var(--gold-light)]',
+    'bg-[var(--surface-primary)] text-[#FFF8F0] border border-[rgba(240,163,82,0.25)] ' +
+    'hover:bg-[var(--surface-secondary)] hover:border-[var(--accent-primary)] ' +
+    'hover:shadow-[0_0_16px_rgba(240,163,82,0.25)]',
   ghost:
     'bg-transparent text-[var(--text-secondary)] border border-transparent ' +
-    'hover:text-[var(--text-primary)] hover:bg-[var(--glass-hover)]',
+    'hover:text-[#FFF8F0] hover:bg-[var(--surface-primary)]',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'text-xs px-3.5 py-1.5 rounded-[var(--border-radius-sm,8px)] gap-1.5 min-h-[32px]',
-  md: 'text-sm px-5 py-2.5 rounded-[var(--border-radius-md,12px)] gap-2 min-h-[42px]',
-  lg: 'text-base px-7 py-3.5 rounded-[var(--border-radius-md,12px)] gap-2.5 min-h-[50px] font-semibold',
+  sm: 'text-xs px-3.5 py-1.5 rounded-lg gap-1.5 min-h-[32px]',
+  md: 'text-sm px-5 py-2.5 rounded-xl gap-2 min-h-[42px]',
+  lg: 'text-base px-7 py-3.5 rounded-xl gap-2.5 min-h-[50px] font-semibold',
 };
 
 export const PrimaryButton = forwardRef<HTMLElement, PrimaryButtonProps>(
@@ -67,12 +72,11 @@ export const PrimaryButton = forwardRef<HTMLElement, PrimaryButtonProps>(
   ) => {
     const isInteractive = !disabled && !loading;
 
-    // Base button classes
     const baseClasses =
       'inline-flex items-center justify-center font-medium tracking-wide ' +
       'transition-all duration-200 select-none cursor-pointer outline-none ' +
-      'focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 ' +
-      'focus-visible:ring-offset-[var(--background)]';
+      'focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 ' +
+      'focus-visible:ring-offset-[#0D0B09]';
 
     const disabledClasses = !isInteractive
       ? 'opacity-50 cursor-not-allowed pointer-events-none shadow-none'
@@ -80,13 +84,25 @@ export const PrimaryButton = forwardRef<HTMLElement, PrimaryButtonProps>(
 
     const combinedClassName = `${baseClasses} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledClasses} ${className}`.trim();
 
-    // Inline style specifically handling the gold gradient background
-    const goldGradientStyle: React.CSSProperties =
+    const gradientStyle: React.CSSProperties =
       variant === 'gold'
         ? {
-            background: 'var(--gold-gradient, linear-gradient(135deg, #C5A46D 0%, #80613C 100%))',
+            background: 'var(--amber-gradient, linear-gradient(135deg, #F0A352 0%, #D97706 100%))',
+          }
+        : variant === 'crimson'
+        ? {
+            background: 'var(--crimson-gradient, linear-gradient(135deg, #E34242 0%, #B91C1C 100%))',
           }
         : {};
+
+    const handleClick = (e: React.MouseEvent<HTMLElement>) => {
+      if (variant === 'gold' || variant === 'crimson') {
+        playEngage();
+      } else {
+        playBlip();
+      }
+      onClick?.(e);
+    };
 
     const content = (
       <>
@@ -102,7 +118,6 @@ export const PrimaryButton = forwardRef<HTMLElement, PrimaryButtonProps>(
       </>
     );
 
-    // If href is specified, render as a Next.js Link wrapped with motion
     if (href && !disabled) {
       const isFullWidth = className.includes('w-full');
       return (
@@ -114,12 +129,11 @@ export const PrimaryButton = forwardRef<HTMLElement, PrimaryButtonProps>(
           <Link
             href={href}
             ref={ref as React.Ref<HTMLAnchorElement>}
-            onClick={isInteractive ? onClick : (e) => e.preventDefault()}
+            onClick={isInteractive ? handleClick : (e) => e.preventDefault()}
             target={target}
             rel={rel}
-            aria-disabled={!isInteractive}
             className={combinedClassName}
-            style={{ ...goldGradientStyle, ...style }}
+            style={{ ...gradientStyle, ...style }}
           >
             {content}
           </Link>
@@ -127,18 +141,16 @@ export const PrimaryButton = forwardRef<HTMLElement, PrimaryButtonProps>(
       );
     }
 
-    // Default button rendering
     return (
       <motion.button
         ref={ref as React.Ref<HTMLButtonElement>}
-        type={type}
-        disabled={!isInteractive}
-        aria-busy={loading}
-        onClick={isInteractive ? onClick : undefined}
+        type={type as 'button' | 'submit' | 'reset'}
+        disabled={disabled || loading}
+        onClick={isInteractive ? handleClick : undefined}
         whileHover={isInteractive ? { scale: 1.02 } : undefined}
         whileTap={isInteractive ? { scale: 0.98 } : undefined}
         className={combinedClassName}
-        style={{ ...goldGradientStyle, ...style }}
+        style={{ ...gradientStyle, ...style }}
         {...motionProps}
       >
         {content}

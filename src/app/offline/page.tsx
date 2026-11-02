@@ -15,10 +15,10 @@ export default function OfflinePage() {
       style={{
         minHeight: '100vh',
         width: '100%',
-        backgroundColor: '#100F0D',
+        backgroundColor: '#260D0D',
         backgroundImage:
-          'radial-gradient(circle at 50% 20%, rgba(197, 164, 109, 0.15) 0%, rgba(16, 15, 13, 0.98) 75%)',
-        color: '#F3EBDD',
+          'radial-gradient(circle at 50% 20%, rgba(227, 66, 66, 0.15) 0%, rgba(38, 13, 13, 0.98) 75%)',
+        color: '#FFF5F0',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -32,7 +32,7 @@ export default function OfflinePage() {
         overflow: 'hidden',
       }}
     >
-      {/* Decorative ambient ring */}
+      {/* Decorative ambient rings */}
       <div
         aria-hidden="true"
         style={{
@@ -40,7 +40,7 @@ export default function OfflinePage() {
           width: '520px',
           height: '520px',
           borderRadius: '50%',
-          border: '1px solid rgba(197, 164, 109, 0.1)',
+          border: '1px solid rgba(227, 66, 66, 0.12)',
           pointerEvents: 'none',
         }}
       />
@@ -51,7 +51,7 @@ export default function OfflinePage() {
           width: '740px',
           height: '740px',
           borderRadius: '50%',
-          border: '1px dashed rgba(197, 164, 109, 0.05)',
+          border: '1px dashed rgba(227, 66, 66, 0.08)',
           pointerEvents: 'none',
         }}
       />
@@ -63,51 +63,48 @@ export default function OfflinePage() {
           zIndex: 1,
           maxWidth: '540px',
           width: '100%',
-          backgroundColor: 'rgba(33, 28, 22, 0.72)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(197, 164, 109, 0.25)',
-          borderRadius: '20px',
+          backgroundColor: 'rgba(53, 19, 19, 0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(227, 66, 66, 0.25)',
+          borderRadius: '24px',
           padding: '48px 32px',
-          boxShadow: '0 16px 48px rgba(0, 0, 0, 0.65), 0 0 24px rgba(197, 164, 109, 0.12)',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(227, 66, 66, 0.12)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
         }}
       >
-        {/* Icon Container with subtle pulsing glow */}
+        {/* Icon Container */}
         <div
           style={{
             width: '80px',
             height: '80px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(197, 164, 109, 0.1)',
-            border: '1px solid rgba(197, 164, 109, 0.35)',
+            borderRadius: '20px',
+            backgroundColor: 'rgba(227, 66, 66, 0.15)',
+            border: '1px solid rgba(227, 66, 66, 0.35)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             marginBottom: '28px',
-            boxShadow: '0 0 20px rgba(197, 164, 109, 0.2)',
+            boxShadow: '0 0 24px rgba(227, 66, 66, 0.25)',
           }}
         >
-          <WifiOff size={36} color="#C5A46D" strokeWidth={1.75} />
+          <WifiOff size={36} color="#E34242" strokeWidth={2} />
         </div>
 
         {/* Heading */}
         <h1
           style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "'Manrope', sans-serif",
             fontSize: 'clamp(1.75rem, 5vw, 2.25rem)',
-            fontWeight: 700,
+            fontWeight: 800,
             margin: '0 0 16px 0',
             letterSpacing: '-0.02em',
-            background: 'linear-gradient(135deg, #DFCA9B 0%, #C5A46D 50%, #9F7F48 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            color: '#C5A46D',
+            color: '#FFF5F0',
           }}
         >
-          Lost in the Frontier
+          Lost Connection
         </h1>
 
         {/* Description */}
@@ -115,12 +112,12 @@ export default function OfflinePage() {
           style={{
             fontSize: '1rem',
             lineHeight: 1.65,
-            color: '#B8AA96',
+            color: '#C7A9A3',
             margin: '0 0 32px 0',
             maxWidth: '440px',
           }}
         >
-          It seems you&apos;ve wandered beyond the reach of civilization. Check your connection and try again.
+          You are currently detached from the Arcadia network. Check your internet connection or play offline-capable titles.
         </p>
 
         {/* Try Again Button */}
@@ -132,15 +129,15 @@ export default function OfflinePage() {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '10px',
-            background: 'linear-gradient(135deg, #C5A46D 0%, #80613C 100%)',
-            color: '#100F0D',
-            fontWeight: 600,
+            background: 'linear-gradient(135deg, #E34242 0%, #C83A35 100%)',
+            color: '#FFFFFF',
+            fontWeight: 700,
             fontSize: '0.95rem',
             letterSpacing: '0.02em',
-            padding: '12px 28px',
-            borderRadius: '10px',
-            border: '1px solid rgba(255, 255, 255, 0.25)',
-            boxShadow: '0 4px 16px rgba(197, 164, 109, 0.3)',
+            padding: '14px 32px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 4px 20px rgba(227, 66, 66, 0.4)',
             cursor: 'pointer',
             transition: 'all 200ms ease',
             outline: 'none',
@@ -148,16 +145,16 @@ export default function OfflinePage() {
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
             e.currentTarget.style.boxShadow =
-              '0 8px 24px rgba(197, 164, 109, 0.45)';
+              '0 8px 28px rgba(227, 66, 66, 0.55)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
             e.currentTarget.style.boxShadow =
-              '0 4px 16px rgba(197, 164, 109, 0.3)';
+              '0 4px 20px rgba(227, 66, 66, 0.4)';
           }}
         >
-          <RefreshCw size={18} strokeWidth={2.2} />
-          <span>Try Again</span>
+          <RefreshCw size={18} strokeWidth={2.4} />
+          <span>Reconnect</span>
         </button>
 
         {/* Small badge */}
@@ -167,10 +164,11 @@ export default function OfflinePage() {
             fontSize: '0.75rem',
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
-            color: '#7E7260',
+            color: '#987B77',
+            fontWeight: 600,
           }}
         >
-          Arcadia Station • Out of Range
+          Arcadia Client • Offline Cache Active
         </span>
       </div>
     </main>

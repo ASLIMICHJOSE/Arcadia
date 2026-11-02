@@ -1,11 +1,11 @@
 {
-  "name": "Arcadia — Premium Gaming Platform",
+  "name": "Arcadia — Premium Gaming Hub",
   "short_name": "Arcadia",
-  "description": "A premium casual multiplayer gaming platform with a cinematic Western atmosphere.",
+  "description": "A premium casual multiplayer gaming platform with an immersive cinematic Western atmosphere.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#100F0D",
-  "theme_color": "#100F0D",
+  "background_color": "#1C0A0A",
+  "theme_color": "#1C0A0A",
   "orientation": "any",
   "categories": ["games", "entertainment"],
   "icons": [

@@ -60,32 +60,29 @@ export default function DashboardOverviewPage() {
       {/* Welcome Banner */}
       <motion.div
         variants={itemVariants}
-        className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[var(--glass-border)]"
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--border-subtle)]"
       >
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--gold)] mb-1">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--accent-primary)] mb-1">
             <Sparkles size={14} />
-            <span>Frontier Dispatch</span>
+            <span>Tactical Dispatch</span>
           </div>
-          <h1
-            className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[var(--text-primary)] tracking-tight"
-            style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-          >
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight">
             Welcome back,{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#DFCA9B] via-[#C5A46D] to-[#9F7F48]">
+            <span className="text-[var(--accent-primary)]">
               {DEMO_PLAYER.username}
             </span>
           </h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1.5">
-            Your battlefield telemetry is synced. Challenge challengers or claim new accolades.
+            Your battlefield telemetry is synced. Challenge contenders or climb the seasonal leaderboard.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 rounded-xl bg-[var(--surface-elevated)] border border-[var(--glass-border)] flex items-center gap-2 text-xs">
-            <Flame size={16} className="text-[#E09F3E]" />
+          <div className="px-4 py-2 rounded-xl bg-[var(--surface-primary)] border border-[rgba(227,66,66,0.3)] shadow-[0_0_12px_rgba(227,66,66,0.15)] flex items-center gap-2 text-xs">
+            <Flame size={16} className="text-[var(--accent-primary)]" />
             <span className="text-[var(--text-secondary)]">Daily Streak:</span>
-            <span className="font-bold text-[var(--gold-light)] font-mono">7 Days</span>
+            <span className="font-bold text-white font-mono">7 Days</span>
           </div>
         </div>
       </motion.div>
@@ -124,7 +121,7 @@ export default function DashboardOverviewPage() {
           value={DEMO_STATS.playtime}
           icon={Clock}
           trend="+6h this week"
-          helperText="Total sanctuary immersion"
+          helperText="Total arena immersion"
           delay={0.2}
         />
       </motion.div>
@@ -136,13 +133,10 @@ export default function DashboardOverviewPage() {
       >
         {/* Left Column: Recently Played (7 cols) */}
         <div className="lg:col-span-7 flex flex-col space-y-4">
-          <GlassPanel padding="lg" className="flex flex-col h-full">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-[var(--glass-border)]">
+          <GlassPanel padding="lg" className="flex flex-col h-full bg-[var(--surface-primary)] border-[var(--border-subtle)]">
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-[var(--border-subtle)]">
               <div>
-                <h2
-                  className="text-xl font-serif font-bold text-[var(--text-primary)]"
-                  style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-                >
+                <h2 className="text-xl font-heading font-bold text-[var(--text-primary)]">
                   Recently Played
                 </h2>
                 <p className="text-xs text-[var(--text-secondary)]">
@@ -152,7 +146,7 @@ export default function DashboardOverviewPage() {
 
               <Link
                 href="/dashboard/games"
-                className="group flex items-center gap-1.5 text-xs font-semibold text-[var(--gold)] hover:text-[var(--gold-light)] transition-colors"
+                className="group flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-primary)] hover:text-white transition-colors"
               >
                 <span>View Library</span>
                 <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
@@ -194,7 +188,7 @@ export default function DashboardOverviewPage() {
         <LeaderboardPreview
           entries={DEMO_LEADERBOARD}
           limit={5}
-          title="Arena Leaderboard"
+          title="Arena Standings"
           viewAllHref="/dashboard/leaderboard"
         />
       </motion.div>

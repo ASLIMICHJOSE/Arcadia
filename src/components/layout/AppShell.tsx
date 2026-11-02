@@ -1,0 +1,96 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  LayoutDashboard,
+  Compass,
+  Gamepad2,
+  Trophy,
+  MessageSquare,
+} from 'lucide-react';
+import Sidebar from './Sidebar';
+import DashboardHeader from './DashboardHeader';
+import FriendsRail from './FriendsRail';
+import { playBlip } from '@/lib/sound';
+import { cn } from '@/lib/utils';
+
+export interface AppShellProps {
+  children: React.ReactNode;
+}
+
+export function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Mobile bottom touch navigation
+  const MOBILE_NAV = [
+    { label: 'Home', href: '/', icon: LayoutDashboard },
+    { label: 'Games', href: '/discover', icon: Gamepad2 },
+    { label: 'Rankings', href: '/leaderboard', icon: Trophy },
+    { label: 'Community', href: '/community', icon: MessageSquare },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#140707] text-[#FFF5F0] flex justify-center items-center p-0 md:p-3 lg:p-4 selection:bg-[#E34242]/40 selection:text-white font-sans">
+      {/* Console Launcher Frame (Matching the rounded desktop/tablet window in screenshot) */}
+      <div className="w-full max-w-[1720px] min-h-screen md:min-h-[920px] bg-[#1C0A0A] md:rounded-[36px] border border-white/[0.08] shadow-[0_25px_80px_rgba(0,0,0,0.95)] flex overflow-hidden relative">
+        {/* 1. Left Vertical Console Dock (76px) */}
+        <Sidebar
+          isMobileOpen={isMobileSidebarOpen}
+          onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        />
+
+        {/* 2. Center Column: Header & Page Viewport */}
+        <div className="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
+          <DashboardHeader
+            onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+          />
+
+          <main className="flex-1 p-3 sm:p-5 lg:p-6 pb-20 md:pb-6 overflow-y-auto">
+            {children}
+          </main>
+        </div>
+
+        {/* 3. Right Vertical Social Presence Rail (70px) */}
+        <div className="hidden xl:block">
+          <FriendsRail />
+        </div>
+
+        {/* 4. Mobile Bottom Touch Dock */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#1C0A0A]/95 backdrop-blur-xl border-t border-white/[0.08] px-4 py-2 flex items-center justify-around shadow-2xl">
+          {MOBILE_NAV.map((item) => {
+            const isActive =
+              item.href === '/'
+                ? pathname === '/'
+                : pathname === item.href || pathname.startsWith(item.href);
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={() => playBlip()}
+                className={cn(
+                  'flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[10px] font-medium transition-colors relative',
+                  isActive
+                    ? 'text-[#E34242] font-bold'
+                    : 'text-[#C7A9A3] hover:text-white'
+                )}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{item.label}</span>
+                {isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E34242] shadow-[0_0_8px_#E34242]" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+    </div>
+  );
+}
+
+export default AppShell;

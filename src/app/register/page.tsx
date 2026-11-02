@@ -12,11 +12,12 @@ import {
   Eye,
   EyeOff,
   Sparkles,
+  ShieldAlert,
 } from 'lucide-react';
 
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import GlassPanel from '@/components/ui/GlassPanel';
+import AppShell from '@/components/layout/AppShell';
+import { playBlip, playEngage } from '@/lib/sound';
+import { saveUserSession } from '@/lib/auth';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -44,76 +45,58 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    // Visual-only registration navigates to dashboard
+    playEngage();
+    saveUserSession(username.toUpperCase(), email);
     setTimeout(() => {
-      router.push('/dashboard');
-    }, 600);
+      router.push('/');
+    }, 500);
   };
 
   return (
-    <div className="relative min-h-screen bg-[var(--background)] text-[var(--text-primary)] flex flex-col selection:bg-[var(--gold)]/30 selection:text-white">
-      {/* Top Navbar */}
-      <Navbar />
-
-      <main className="flex-1 w-full flex items-center justify-center relative overflow-hidden py-16 sm:py-24 px-4 sm:px-6">
-        {/* Layered Atmospheric Western Dusk Gradient */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `
-              radial-gradient(circle at 50% 45%, rgba(197, 164, 109, 0.16) 0%, rgba(104, 44, 16, 0.14) 35%, transparent 70%),
-              linear-gradient(180deg, #100F0D 0%, #191417 35%, #251610 65%, #100F0D 100%)
-            `,
-          }}
-        />
-
-        {/* Ambient Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] rounded-full bg-[var(--gold)]/10 blur-[110px] pointer-events-none" />
-
-        {/* Register Glass Panel Container */}
+    <AppShell>
+      <div className="min-h-[75vh] flex items-center justify-center py-6 select-none">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-10 w-full max-w-lg"
+          transition={{ duration: 0.45 }}
+          className="w-full max-w-lg"
         >
-          <GlassPanel
-            padding="lg"
-            className="p-8 sm:p-10 border-[var(--glass-border)] shadow-[var(--glass-shadow-lg)] backdrop-blur-xl"
-          >
+          <div className="rounded-[28px] bg-[#291010] border border-white/[0.08] p-7 sm:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative overflow-hidden">
             {/* Header */}
-            <div className="text-center mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-[var(--gold-muted)] border border-[var(--glass-border-gold)] text-[var(--gold)] flex items-center justify-center mx-auto mb-4 shadow-[var(--gold-glow-sm)]">
-                <Sparkles className="w-6 h-6 text-[var(--gold)]" />
+            <div className="text-center mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/35 text-[#E34242] flex items-center justify-center mx-auto mb-3.5 shadow-[0_0_16px_rgba(227,66,66,0.25)]">
+                <Sparkles className="w-6 h-6" />
               </div>
 
-              <h1
-                className="text-3xl font-serif font-bold text-[var(--text-primary)] tracking-tight"
-                style={{ fontFamily: 'var(--font-serif, "Playfair Display", Georgia, serif)' }}
-              >
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#E34242]/20 border border-[#E34242]/40 text-[#E34242] text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
+                <span>NEW CONTENDER REGISTRATION</span>
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl font-heading font-black text-white tracking-tight">
                 Join Arcadia
               </h1>
-              <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                Claim your player tag and begin your ascension through the ranks.
+              <p className="mt-1.5 text-xs text-[#C7A9A3]">
+                Claim your contender tag and start your ascension through the competitive ranks.
               </p>
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="mb-5 p-3 rounded-xl bg-[rgba(214,69,69,0.15)] border border-[var(--danger)] text-[var(--danger)] text-xs text-center font-medium">
-                {error}
+              <div className="mb-4 p-3 rounded-2xl bg-red-950/60 border border-red-500/40 text-red-300 text-xs text-center font-bold flex items-center justify-center gap-2">
+                <ShieldAlert size={14} className="text-[#E34242]" />
+                <span>{error}</span>
               </div>
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               {/* Username Field */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[var(--text-secondary)]">
-                  Player Username
+              <div className="space-y-1">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-[#C7A9A3]">
+                  Player Handle / Gamertag
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C6D68]">
                     <User className="w-4 h-4" />
                   </div>
                   <input
@@ -122,18 +105,18 @@ export default function RegisterPage() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="e.g. Frontier_Legend"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--glass-border)] text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#1C0A0A] border border-white/10 text-xs text-white placeholder-[#8C6D68] focus:outline-none focus:border-[#E34242] transition-colors"
                   />
                 </div>
               </div>
 
               {/* Email Field */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[var(--text-secondary)]">
-                  Email Address
+              <div className="space-y-1">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-[#C7A9A3]">
+                  Console Dispatch Email
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C6D68]">
                     <Mail className="w-4 h-4" />
                   </div>
                   <input
@@ -142,78 +125,71 @@ export default function RegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="scout@frontier.arcadia"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--glass-border)] text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#1C0A0A] border border-white/10 text-xs text-white placeholder-[#8C6D68] focus:outline-none focus:border-[#E34242] transition-colors"
                   />
                 </div>
               </div>
 
               {/* Password Field */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[var(--text-secondary)]">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
-                    <Lock className="w-4 h-4" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-[#C7A9A3]">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8C6D68]">
+                      <Lock className="w-3.5 h-3.5" />
+                    </div>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-[#1C0A0A] border border-white/10 text-xs text-white placeholder-[#8C6D68] focus:outline-none focus:border-[#E34242] transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#8C6D68] hover:text-white transition-colors cursor-pointer"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
                   </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--glass-border)] text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)] transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
                 </div>
-              </div>
 
-              {/* Confirm Password Field */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[var(--text-secondary)]">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
-                    <Lock className="w-4 h-4" />
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-[#C7A9A3]">
+                    Confirm Key
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8C6D68]">
+                      <Lock className="w-3.5 h-3.5" />
+                    </div>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#1C0A0A] border border-white/10 text-xs text-white placeholder-[#8C6D68] focus:outline-none focus:border-[#E34242] transition-colors"
+                    />
                   </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--glass-border)] text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)] transition-colors"
-                  />
                 </div>
               </div>
 
               {/* Terms Checkbox */}
-              <div className="pt-2">
+              <div className="pt-1">
                 <label className="flex items-start gap-2.5 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={termsAccepted}
                     onChange={(e) => setTermsAccepted(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 rounded bg-[var(--surface)] border-[var(--glass-border)] text-[var(--gold)] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[var(--gold)]"
+                    className="mt-0.5 w-4 h-4 rounded bg-[#1C0A0A] border-white/10 text-[#E34242] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#E34242]"
                   />
-                  <span className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                    I agree to the Arcadia{' '}
-                    <Link href="#" className="text-[var(--gold)] hover:underline">
-                      Honor Code
-                    </Link>{' '}
-                    and{' '}
-                    <Link href="#" className="text-[var(--gold)] hover:underline">
-                      Terms of Service
-                    </Link>
-                    .
+                  <span className="text-[11px] text-[#C7A9A3] leading-relaxed">
+                    I agree to the Arcadia Honor Code and Station Guidelines.
                   </span>
                 </label>
               </div>
@@ -222,40 +198,38 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="gold-btn w-full py-3 text-sm font-semibold mt-4 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#E34242] to-[#C83A35] hover:from-[#EF5350] hover:to-[#D32F2F] text-white text-xs font-bold shadow-[0_4px_16px_rgba(227,66,66,0.35)] transition-all flex items-center justify-center gap-2 mt-3 cursor-pointer"
               >
                 {loading ? (
                   <span className="inline-flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-[#100F0D] border-t-transparent rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     Forging Profile...
                   </span>
                 ) : (
                   <>
-                    <span>Sign Up</span>
-                    <ArrowRight className="w-4 h-4 text-[#100F0D]" />
+                    <span>Create Profile &amp; Enter</span>
+                    <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
             </form>
 
             {/* Bottom Login Link */}
-            <div className="mt-8 pt-6 border-t border-[var(--glass-border)] text-center">
-              <p className="text-xs text-[var(--text-secondary)]">
-                Already have an account?{' '}
+            <div className="mt-5 pt-4 border-t border-white/[0.08] text-center">
+              <p className="text-xs text-[#C7A9A3]">
+                Already hold an active ID?{' '}
                 <Link
                   href="/login"
-                  className="font-semibold text-[var(--gold)] hover:text-[var(--gold-light)] transition-colors underline-offset-4 hover:underline ml-1"
+                  onClick={() => playBlip()}
+                  className="font-bold text-[#E34242] hover:text-white transition-colors ml-1"
                 >
-                  Login
+                  Sign In
                 </Link>
               </p>
             </div>
-          </GlassPanel>
+          </div>
         </motion.div>
-      </main>
-
-      {/* Footer */}
-      <Footer />
-    </div>
+      </div>
+    </AppShell>
   );
 }

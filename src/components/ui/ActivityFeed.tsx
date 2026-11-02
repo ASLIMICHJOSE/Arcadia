@@ -13,7 +13,6 @@ import {
   Send,
   Activity,
   LucideIcon,
-  Radio,
 } from 'lucide-react';
 import GlassPanel from './GlassPanel';
 import { DEMO_ACTIVITY, ActivityItem, ActivityType } from '@/lib/constants';
@@ -79,24 +78,24 @@ function getActivityTypeStyles(type: ActivityType) {
   switch (type) {
     case 'achievement':
       return {
-        badgeColor: 'text-[var(--success)] bg-[var(--success-bg)] border-[rgba(78,173,123,0.3)]',
-        accentGlow: '0 0 12px rgba(78,173,123,0.25)',
+        badgeColor: 'text-amber-400 bg-amber-950/40 border-amber-500/30',
+        accentGlow: '0 0 12px rgba(245,158,11,0.25)',
       };
     case 'level_up':
       return {
-        badgeColor: 'text-purple-300 bg-purple-900/30 border-purple-500/30',
+        badgeColor: 'text-purple-300 bg-purple-950/40 border-purple-500/30',
         accentGlow: '0 0 12px rgba(168,85,247,0.25)',
       };
     case 'friend':
       return {
-        badgeColor: 'text-[var(--info)] bg-[var(--info-bg)] border-[rgba(79,134,198,0.3)]',
-        accentGlow: '0 0 12px rgba(79,134,198,0.25)',
+        badgeColor: 'text-sky-300 bg-sky-950/40 border-sky-500/30',
+        accentGlow: '0 0 12px rgba(56,189,248,0.2)',
       };
     case 'game_played':
     default:
       return {
-        badgeColor: 'text-[var(--gold)] bg-[var(--gold-muted)] border-[var(--glass-border-gold)]',
-        accentGlow: 'var(--gold-glow-sm)',
+        badgeColor: 'text-[var(--accent-primary)] bg-[rgba(240,163,82,0.15)] border-[rgba(240,163,82,0.3)]',
+        accentGlow: '0 0 12px rgba(240,163,82,0.25)',
       };
   }
 }
@@ -110,74 +109,61 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   const displayedActivities = activities.slice(0, limit);
 
   return (
-    <GlassPanel padding="lg" className={`flex flex-col ${className}`}>
+    <GlassPanel padding="lg" showFlare className={`flex flex-col bg-[var(--surface-primary)] border-[rgba(240,163,82,0.2)] ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 mb-4 border-b border-[var(--glass-border)]">
+      <div className="flex items-center justify-between pb-4 mb-4 border-b border-[rgba(240,163,82,0.15)]">
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-[var(--border-radius-sm,8px)] flex items-center justify-center text-[var(--gold)]"
-            style={{
-              background: 'var(--gold-muted)',
-              border: '1px solid var(--glass-border-gold)',
-            }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--accent-primary)] bg-[var(--surface-secondary)] border border-[rgba(240,163,82,0.3)] shadow-[0_0_12px_rgba(240,163,82,0.2)]"
           >
             <Activity className="w-5 h-5" />
           </div>
           <div>
-            <h3
-              className="text-lg font-serif font-bold text-[var(--text-primary)]"
-              style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-            >
+            <h3 className="text-lg font-heading font-black text-[var(--text-primary)]">
               {title}
             </h3>
-            <p className="text-xs text-[var(--text-secondary)]">Platform timeline events</p>
+            <p className="text-xs text-[var(--text-secondary)]">Live feed across the arena</p>
           </div>
         </div>
 
-        {/* Live Indicator */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--surface-elevated)] border border-[var(--glass-border)]">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--success)] opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--success)]" />
-          </span>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-secondary)]">
-            Live
-          </span>
-        </div>
+        <span className="text-[11px] font-mono px-2.5 py-1 rounded-full text-[var(--accent-primary)] bg-[rgba(240,163,82,0.12)] border border-[rgba(240,163,82,0.3)] font-semibold">
+          Real-Time
+        </span>
       </div>
 
-      {/* Activities Timeline */}
+      {/* Activities list */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="relative space-y-4 before:absolute before:left-4 before:top-3 before:bottom-3 before:w-[1px] before:bg-[var(--glass-border)]"
+        className="space-y-3 flex-1"
       >
-        {displayedActivities.map((activity, index) => {
-          const IconComponent = resolveActivityIcon(activity.icon, activity.type);
-          const { badgeColor, accentGlow } = getActivityTypeStyles(activity.type);
+        {displayedActivities.map((item) => {
+          const Icon = resolveActivityIcon(item.icon, item.type);
+          const { badgeColor, accentGlow } = getActivityTypeStyles(item.type);
 
           return (
             <motion.div
-              key={activity.id || `${activity.type}-${index}`}
+              key={item.id}
               variants={itemVariants}
-              className="relative flex items-start gap-3.5 group pl-0.5"
+              whileHover={{ x: 2, transition: { duration: 0.15 } }}
+              className="flex items-start gap-3.5 p-2.5 rounded-xl hover:bg-[var(--surface-secondary)]/50 transition-colors group cursor-default"
             >
-              {/* Type Icon Badge */}
+              {/* Type-differentiated Icon Badge */}
               <div
-                className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center border shrink-0 backdrop-blur-sm transition-transform duration-200 group-hover:scale-110 ${badgeColor}`}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border mt-0.5 ${badgeColor}`}
                 style={{ boxShadow: accentGlow }}
               >
-                <IconComponent className="w-4 h-4" />
+                <Icon className="w-4 h-4" />
               </div>
 
-              {/* Activity Message and Time */}
-              <div className="flex-1 min-w-0 pt-0.5">
-                <p className="text-xs md:text-sm text-[var(--text-primary)] leading-snug group-hover:text-[var(--text-gold)] transition-colors">
-                  {activity.message}
+              {/* Message & Relative Timestamp */}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs md:text-sm text-[var(--text-primary)] leading-snug group-hover:text-white transition-colors">
+                  {item.message}
                 </p>
-                <span className="text-[11px] font-mono text-[var(--text-muted)] mt-1 block">
-                  {activity.time}
+                <span className="text-[11px] text-[var(--text-muted)] font-mono block mt-1">
+                  {item.time}
                 </span>
               </div>
             </motion.div>

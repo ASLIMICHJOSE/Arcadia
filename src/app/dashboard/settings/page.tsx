@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Settings as SettingsIcon,
   User,
-  Mail,
   Lock,
   Moon,
   Bell,
@@ -16,45 +15,67 @@ import {
   ShieldCheck,
   AlertTriangle,
   CheckCircle2,
+  HardDrive,
+  RefreshCw,
+  Smartphone,
   Sparkles,
 } from 'lucide-react';
 import { GlassPanel } from '@/components/ui';
 import { DEMO_PLAYER } from '@/lib/constants';
+import { getCurrentUser, UserSession } from '@/lib/auth';
+import { playBlip, playEngage } from '@/lib/sound';
 
 export default function SettingsPage() {
-  // Preferences state
+  const [user, setUser] = useState<UserSession>({ username: 'CONTENDER', isLoggedIn: false });
   const [notifications, setNotifications] = useState(true);
   const [soundEffects, setSoundEffects] = useState(true);
-  const [bgMusic, setBgMusic] = useState(false);
+  const [haptics, setHaptics] = useState(true);
 
-  // Demo feedback states
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [cacheCleared, setCacheCleared] = useState(false);
+
+  useEffect(() => {
+    setUser(getCurrentUser());
+  }, []);
 
   const triggerFeedback = (msg: string) => {
     setFeedbackMessage(msg);
+    playBlip();
     setTimeout(() => {
       setFeedbackMessage(null);
     }, 3500);
   };
 
+  const handleClearCache = () => {
+    setCacheCleared(true);
+    triggerFeedback('Offline cache refreshed & synchronized (3.2 MB re-verified).');
+  };
+
   return (
-    <div className="space-y-8 pb-16 max-w-4xl">
-      {/* Header */}
-      <div className="border-b border-[var(--glass-border)] pb-6">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--gold)] mb-1">
-          <SettingsIcon size={14} />
-          <span>Sanctuary Configuration</span>
+    <div className="w-full space-y-6 pb-12 select-none">
+      {/* Header Banner - Full Width */}
+      <div className="rounded-[28px] overflow-hidden bg-gradient-to-r from-[#291010] via-[#351414] to-[#220C0C] border border-white/[0.08] p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl">
+        <div className="max-w-2xl space-y-2">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#E34242]/20 border border-[#E34242]/40 text-[#E34242] text-xs font-mono font-bold uppercase tracking-wider">
+            <SettingsIcon className="w-3.5 h-3.5" />
+            <span>STATION CONFIGURATION</span>
+          </div>
+          <h1 className="text-2xl sm:text-4xl font-heading font-black text-white tracking-tight">
+            Station Settings
+          </h1>
+          <p className="text-xs sm:text-sm text-[#C7A9A3] leading-relaxed">
+            Manage your player profile identity, sensory audio preferences, offline PWA storage, and station security credentials.
+          </p>
         </div>
-        <h1
-          className="text-3xl sm:text-4xl font-serif font-bold text-[var(--text-primary)] tracking-tight"
-          style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-        >
-          Settings
-        </h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1.5 max-w-xl">
-          Manage your player profile identity, audio and sensory preferences, and frontier security credentials.
-        </p>
+
+        <div className="flex items-center gap-3">
+          <div className="px-4 py-2.5 rounded-2xl bg-[#1C0A0A] border border-white/10 flex items-center gap-2.5 text-xs text-[#C7A9A3]">
+            <ShieldCheck size={16} className="text-emerald-400" />
+            <span>Client Version:</span>
+            <span className="font-mono font-bold text-white">v2.4.0 (PWA)</span>
+          </div>
+        </div>
       </div>
 
       {/* Floating Feedback Alert */}
@@ -64,291 +85,261 @@ export default function SettingsPage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="p-4 rounded-xl bg-[#19271E]/95 border border-[#4EAD7B]/50 text-[#A8E6CF] text-xs font-semibold flex items-center gap-2 shadow-lg backdrop-blur-md"
+            className="p-4 rounded-2xl bg-emerald-950/90 border border-emerald-500/50 text-emerald-300 text-xs font-bold flex items-center gap-2.5 shadow-xl backdrop-blur-md"
           >
-            <CheckCircle2 size={16} className="text-[#4EAD7B]" />
+            <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
             <span>{feedbackMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Section 1: Profile */}
-      <GlassPanel padding="lg" className="space-y-6">
-        <div className="flex items-center gap-3 pb-4 border-b border-[var(--glass-border)]">
-          <div className="w-9 h-9 rounded-xl bg-[var(--gold-muted)] border border-[var(--glass-border-gold)] flex items-center justify-center text-[var(--gold)]">
-            <User size={18} />
-          </div>
-          <div>
-            <h2
-              className="text-lg font-serif font-bold text-[var(--text-primary)]"
-              style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-            >
-              Profile Information
-            </h2>
-            <p className="text-xs text-[var(--text-secondary)]">
-              Your publicly visible identity across the Arcadia coliseum
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Username (Disabled) */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--text-secondary)] flex items-center justify-between">
-              <span>Username</span>
-              <span className="text-[10px] text-[var(--text-muted)] flex items-center gap-1">
-                <Lock size={10} /> Locked
-              </span>
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                disabled
-                value={DEMO_PLAYER.username}
-                className="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-elevated)]/70 border border-[var(--glass-border)] text-[var(--text-primary)] text-sm font-mono opacity-80 cursor-not-allowed focus:outline-none"
-              />
-            </div>
-            <p className="text-[11px] text-[var(--text-muted)]">
-              Monikers are permanently bound to your soul. Contact support to request a change.
-            </p>
-          </div>
-
-          {/* Email (Disabled) */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[var(--text-secondary)] flex items-center justify-between">
-              <span>Email Address</span>
-              <span className="text-[10px] text-[#4EAD7B] flex items-center gap-1 font-semibold">
-                <ShieldCheck size={11} /> Verified
-              </span>
-            </label>
-            <div className="relative">
-              <input
-                type="email"
-                disabled
-                value="frontier.scout@arcadia.game"
-                className="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-elevated)]/70 border border-[var(--glass-border)] text-[var(--text-primary)] text-sm font-mono opacity-80 cursor-not-allowed focus:outline-none"
-              />
-            </div>
-            <p className="text-[11px] text-[var(--text-muted)]">
-              Used for account recovery and tournament match alerts.
-            </p>
-          </div>
-        </div>
-
-        {/* Player Badge Details */}
-        <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-[var(--text-secondary)]">
-          <span className="px-3 py-1 rounded-full bg-[var(--surface-elevated)] border border-[var(--glass-border)]">
-            Rank Title: <strong className="text-[var(--gold)] font-serif">{DEMO_PLAYER.title}</strong>
-          </span>
-          <span className="px-3 py-1 rounded-full bg-[var(--surface-elevated)] border border-[var(--glass-border)]">
-            Account Level: <strong className="text-[var(--gold-light)] font-mono">Level {DEMO_PLAYER.level}</strong>
-          </span>
-          <span className="px-3 py-1 rounded-full bg-[var(--surface-elevated)] border border-[var(--glass-border)]">
-            Enlisted: <strong className="text-[var(--text-primary)]">{DEMO_PLAYER.joinDate}</strong>
-          </span>
-        </div>
-      </GlassPanel>
-
-      {/* Section 2: Preferences */}
-      <GlassPanel padding="lg" className="space-y-6">
-        <div className="flex items-center gap-3 pb-4 border-b border-[var(--glass-border)]">
-          <div className="w-9 h-9 rounded-xl bg-[var(--gold-muted)] border border-[var(--glass-border-gold)] flex items-center justify-center text-[var(--gold)]">
-            <Moon size={18} />
-          </div>
-          <div>
-            <h2
-              className="text-lg font-serif font-bold text-[var(--text-primary)]"
-              style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-            >
-              Preferences
-            </h2>
-            <p className="text-xs text-[var(--text-secondary)]">
-              Sensory, audio, and platform interface customization
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {/* Dark Mode Toggle (Always on) */}
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--surface-card)] border border-[var(--glass-border)]">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[var(--surface-elevated)] flex items-center justify-center text-[var(--gold)]">
-                <Moon size={16} />
+      {/* 2-Column Responsive Layout Filling Full Width */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+        {/* Left Column (7 cols): Profile & Storage */}
+        <div className="lg:col-span-7 space-y-6">
+          {/* Profile Card */}
+          <div className="rounded-[26px] bg-[#291010] border border-white/[0.08] p-6 shadow-xl space-y-5">
+            <div className="flex items-center gap-3 pb-4 border-b border-white/[0.06]">
+              <div className="w-10 h-10 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/30 flex items-center justify-center text-[#E34242] shadow-sm">
+                <User size={18} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[var(--text-primary)]">Dark Mode</p>
-                <p className="text-xs text-[var(--text-muted)]">
-                  Arcadia is forged exclusively in obsidian darkness for maximum cinematic contrast.
+                <h2 className="text-base font-heading font-bold text-white">
+                  Contender Profile
+                </h2>
+                <p className="text-xs text-[#C7A9A3]">
+                  Your publicly visible identity across the Arcadia coliseum
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] uppercase font-mono text-[var(--gold)] font-bold">Always On</span>
-              <div
-                className="w-12 h-6 rounded-full bg-[var(--gold)] p-0.5 cursor-not-allowed flex items-center justify-end"
-                title="Theme locked to obsidian dark"
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Username */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-[#C7A9A3] flex items-center justify-between">
+                  <span>Player Handle</span>
+                  <span className="text-[10px] text-[#8C6D68] flex items-center gap-1 font-semibold">
+                    <Lock size={10} /> Bound
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={user.username || DEMO_PLAYER.username}
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#1C0A0A] border border-white/10 text-white text-xs font-mono opacity-85 cursor-not-allowed focus:outline-none"
+                />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-[#C7A9A3] flex items-center justify-between">
+                  <span>Dispatch Email</span>
+                  <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold">
+                    <ShieldCheck size={11} /> Verified
+                  </span>
+                </label>
+                <input
+                  type="email"
+                  disabled
+                  value={user.email || 'frontier.scout@arcadia.game'}
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#1C0A0A] border border-white/10 text-white text-xs font-mono opacity-85 cursor-not-allowed focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Badges */}
+            <div className="pt-2 flex flex-wrap items-center gap-2.5 text-xs">
+              <span className="px-3 py-1 rounded-xl bg-[#1C0A0A] border border-white/10 text-[#C7A9A3]">
+                Title: <strong className="text-[#E34242] font-heading">{DEMO_PLAYER.title}</strong>
+              </span>
+              <span className="px-3 py-1 rounded-xl bg-[#1C0A0A] border border-white/10 text-[#C7A9A3]">
+                Level: <strong className="text-white font-mono">{DEMO_PLAYER.level}</strong>
+              </span>
+              <span className="px-3 py-1 rounded-xl bg-[#1C0A0A] border border-white/10 text-[#C7A9A3]">
+                Enlisted: <strong className="text-white">{DEMO_PLAYER.joinDate}</strong>
+              </span>
+            </div>
+          </div>
+
+          {/* PWA & Offline Storage */}
+          <div className="rounded-[26px] bg-[#291010] border border-white/[0.08] p-6 shadow-xl space-y-4">
+            <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
+              <div className="w-10 h-10 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/30 flex items-center justify-center text-[#E34242] shadow-sm">
+                <HardDrive size={18} />
+              </div>
+              <div>
+                <h2 className="text-base font-heading font-bold text-white">
+                  PWA &amp; Offline Storage Cache
+                </h2>
+                <p className="text-xs text-[#C7A9A3]">
+                  All games run 100% locally from your device cache
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#1C0A0A] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34D399]" />
+                  <p className="text-xs font-bold text-white">4 Titles Cached (3.2 MB)</p>
+                </div>
+                <p className="text-[11px] text-[#8C6D68]">
+                  Snake Arena, Tic-Tac-Toe, Memory Match, Rock Paper Scissors
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleClearCache}
+                className="px-4 py-2 rounded-xl bg-[#291010] hover:bg-[#351414] border border-white/10 text-xs font-semibold text-white hover:border-[#E34242] flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap self-start sm:self-auto"
               >
-                <div className="w-5 h-5 rounded-full bg-[#100F0D] shadow-sm" />
-              </div>
+                <RefreshCw size={13} className="text-[#E34242]" />
+                <span>Verify Cache</span>
+              </button>
             </div>
-          </div>
-
-          {/* Notifications Toggle */}
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--surface-card)] border border-[var(--glass-border)]">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[var(--surface-elevated)] flex items-center justify-center text-[var(--gold)]">
-                <Bell size={16} />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-[var(--text-primary)]">
-                  Match & Achievement Notifications
-                </p>
-                <p className="text-xs text-[var(--text-muted)]">
-                  Receive toasts when opponents challenge you or achievements unlock.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setNotifications(!notifications);
-                triggerFeedback(`Notifications ${!notifications ? 'enabled' : 'disabled'}`);
-              }}
-              className={`w-12 h-6 rounded-full p-0.5 transition-colors cursor-pointer flex items-center ${
-                notifications ? 'bg-[var(--gold)] justify-end' : 'bg-[var(--surface-elevated)] justify-start'
-              }`}
-              aria-label="Toggle notifications"
-            >
-              <div
-                className={`w-5 h-5 rounded-full shadow-sm transition-all ${
-                  notifications ? 'bg-[#100F0D]' : 'bg-[var(--text-muted)]'
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Sound Toggle */}
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--surface-card)] border border-[var(--glass-border)]">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[var(--surface-elevated)] flex items-center justify-center text-[var(--gold)]">
-                {soundEffects ? <Volume2 size={16} /> : <VolumeX size={16} />}
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-[var(--text-primary)]">
-                  Tactile Sound Effects
-                </p>
-                <p className="text-xs text-[var(--text-muted)]">
-                  Audio chimes for moves, button clicks, card flips, and victory fanfares.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setSoundEffects(!soundEffects);
-                triggerFeedback(`Sound effects ${!soundEffects ? 'unmuted' : 'muted'}`);
-              }}
-              className={`w-12 h-6 rounded-full p-0.5 transition-colors cursor-pointer flex items-center ${
-                soundEffects ? 'bg-[var(--gold)] justify-end' : 'bg-[var(--surface-elevated)] justify-start'
-              }`}
-              aria-label="Toggle sound effects"
-            >
-              <div
-                className={`w-5 h-5 rounded-full shadow-sm transition-all ${
-                  soundEffects ? 'bg-[#100F0D]' : 'bg-[var(--text-muted)]'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-      </GlassPanel>
-
-      {/* Section 3: Account & Danger Zone */}
-      <GlassPanel padding="lg" className="space-y-6">
-        <div className="flex items-center gap-3 pb-4 border-b border-[var(--glass-border)]">
-          <div className="w-9 h-9 rounded-xl bg-[var(--gold-muted)] border border-[var(--glass-border-gold)] flex items-center justify-center text-[var(--gold)]">
-            <KeyRound size={18} />
-          </div>
-          <div>
-            <h2
-              className="text-lg font-serif font-bold text-[var(--text-primary)]"
-              style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-            >
-              Account & Security
-            </h2>
-            <p className="text-xs text-[var(--text-secondary)]">
-              Manage your credentials, sessions, and data lifecycle
-            </p>
           </div>
         </div>
 
-        <div className="space-y-4">
-          {/* Change Password Button */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[var(--surface-card)] border border-[var(--glass-border)]">
-            <div>
-              <p className="text-sm font-semibold text-[var(--text-primary)]">Security Password</p>
-              <p className="text-xs text-[var(--text-muted)]">
-                Last changed 3 months ago. We recommend refreshing periodically.
-              </p>
+        {/* Right Column (5 cols): Preferences & Security */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Preferences */}
+          <div className="rounded-[26px] bg-[#291010] border border-white/[0.08] p-6 shadow-xl space-y-4">
+            <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
+              <div className="w-10 h-10 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/30 flex items-center justify-center text-[#E34242] shadow-sm">
+                <Moon size={18} />
+              </div>
+              <div>
+                <h2 className="text-base font-heading font-bold text-white">
+                  Sensory Preferences
+                </h2>
+                <p className="text-xs text-[#C7A9A3]">
+                  Audio feedback and visual theme controls
+                </p>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => triggerFeedback('Password reset link dispatched to verified email address.')}
-              className="px-4 py-2 text-xs font-semibold rounded-xl bg-[var(--glass)] border border-[var(--glass-border)] text-[var(--gold-light)] hover:border-[var(--gold)] hover:bg-[var(--glass-hover)] transition-all cursor-pointer whitespace-nowrap self-start sm:self-auto"
-            >
-              Change Password
-            </button>
-          </div>
+            <div className="space-y-3">
+              {/* Dark Burgundy Mode */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#1C0A0A] border border-white/10">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-bold text-white">Dark Burgundy OS</p>
+                  <p className="text-[10px] text-[#8C6D68]">Cinematic AAA launcher theme</p>
+                </div>
+                <span className="text-[10px] font-mono text-[#E34242] font-bold uppercase">Locked On</span>
+              </div>
 
-          {/* Delete Account Danger Button */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[var(--danger-bg,#2A1212)] border border-[var(--danger,#D64545)]/40">
-            <div>
-              <p className="text-sm font-semibold text-[#FF8585] flex items-center gap-1.5">
-                <AlertTriangle size={15} />
-                <span>Delete Account</span>
-              </p>
-              <p className="text-xs text-[var(--text-secondary)]">
-                Permanently purge your match history, earned distinctions, and coliseum leaderboard rank.
-              </p>
-            </div>
-
-            {showDeleteConfirm ? (
-              <div className="flex items-center gap-2 self-start sm:self-auto">
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:text-white"
-                >
-                  Cancel
-                </button>
+              {/* Sound Effects */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#1C0A0A] border border-white/10">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-bold text-white">Chimes &amp; FX Audio</p>
+                  <p className="text-[10px] text-[#8C6D68]">Moves, blips, and victory fanfares</p>
+                </div>
                 <button
                   type="button"
                   onClick={() => {
-                    setShowDeleteConfirm(false);
-                    triggerFeedback('Account deletion request acknowledged (Demo sandbox).');
+                    setSoundEffects(!soundEffects);
+                    triggerFeedback(`Sound effects ${!soundEffects ? 'unmuted' : 'muted'}`);
                   }}
-                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#D64545] text-white hover:bg-[#B53535] transition-colors shadow-lg cursor-pointer"
+                  className={`w-11 h-6 rounded-full p-0.5 transition-colors cursor-pointer flex items-center ${
+                    soundEffects ? 'bg-[#E34242] justify-end' : 'bg-white/10 justify-start'
+                  }`}
+                  aria-label="Toggle sound effects"
                 >
-                  Confirm Delete
+                  <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
                 </button>
               </div>
-            ) : (
+
+              {/* Match Notifications */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#1C0A0A] border border-white/10">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-bold text-white">Duel Dispatches</p>
+                  <p className="text-[10px] text-[#8C6D68]">In-game challenge notifications</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNotifications(!notifications);
+                    triggerFeedback(`Notifications ${!notifications ? 'enabled' : 'disabled'}`);
+                  }}
+                  className={`w-11 h-6 rounded-full p-0.5 transition-colors cursor-pointer flex items-center ${
+                    notifications ? 'bg-[#E34242] justify-end' : 'bg-white/10 justify-start'
+                  }`}
+                  aria-label="Toggle notifications"
+                >
+                  <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Account Security & Actions */}
+          <div className="rounded-[26px] bg-[#291010] border border-white/[0.08] p-6 shadow-xl space-y-4">
+            <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
+              <div className="w-10 h-10 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/30 flex items-center justify-center text-[#E34242] shadow-sm">
+                <KeyRound size={18} />
+              </div>
+              <div>
+                <h2 className="text-base font-heading font-bold text-white">
+                  Security &amp; Danger Zone
+                </h2>
+                <p className="text-xs text-[#C7A9A3]">
+                  Credentials and station lifecycle
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#D64545]/20 border border-[#D64545]/40 text-[#FF8585] hover:bg-[#D64545]/30 transition-all cursor-pointer whitespace-nowrap self-start sm:self-auto flex items-center gap-1.5"
+                onClick={() => triggerFeedback('Security password reset link dispatched.')}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#1C0A0A] hover:bg-[#351414] border border-white/10 text-xs font-semibold text-white hover:border-[#E34242] transition-all text-left flex items-center justify-between cursor-pointer"
               >
-                <Trash2 size={13} />
-                <span>Delete Account</span>
+                <span>Change Station Key</span>
+                <span className="text-[10px] font-mono text-[#8C6D68]">Protected →</span>
               </button>
-            )}
+
+              {/* Danger Delete Account */}
+              <div className="p-3 rounded-2xl bg-red-950/20 border border-red-500/20 flex flex-col gap-2">
+                <p className="text-xs font-bold text-red-300">Station Reset</p>
+                <p className="text-[10px] text-[#8C6D68]">
+                  Purge local cache, match history, and saved preferences.
+                </p>
+
+                {showDeleteConfirm ? (
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="px-3 py-1 text-xs text-[#C7A9A3] hover:text-white"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowDeleteConfirm(false);
+                        triggerFeedback('Station data purged. Resetting session...');
+                      }}
+                      className="px-3.5 py-1 text-xs font-bold rounded-xl bg-[#E34242] text-white hover:bg-[#C83A35] transition-colors shadow-md"
+                    >
+                      Confirm Reset
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="py-1.5 px-3 rounded-xl bg-red-900/30 border border-red-500/30 text-red-300 text-xs font-semibold hover:bg-red-900/50 transition-all cursor-pointer self-start flex items-center gap-1.5"
+                  >
+                    <Trash2 size={12} />
+                    <span>Reset Station</span>
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </GlassPanel>
+      </div>
     </div>
   );
 }

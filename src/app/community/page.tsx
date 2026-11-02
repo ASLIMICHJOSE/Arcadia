@@ -12,11 +12,13 @@ import {
   Trophy,
   Shield,
   Bell,
+  MessageCircle,
+  Flame,
+  UserPlus,
 } from 'lucide-react';
 
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import GlassPanel from '@/components/ui/GlassPanel';
+import AppShell from '@/components/layout/AppShell';
+import { playBlip, playEngage } from '@/lib/sound';
 
 const UPCOMING_COMMUNITY_FEATURES = [
   {
@@ -25,6 +27,7 @@ const UPCOMING_COMMUNITY_FEATURES = [
     description:
       'Exchange opening theories for Tic-Tac-Toe, optimal turn paths in Snake, and mnemonic memory triggers with master tacticians.',
     status: 'In Development',
+    members: '1.4K active',
   },
   {
     icon: Trophy,
@@ -32,13 +35,15 @@ const UPCOMING_COMMUNITY_FEATURES = [
     description:
       'Compete in automated weekend knockout tournaments with real-time bracket tracking and exclusive seasonal profile banners.',
     status: 'Alpha Testing',
+    members: 'Registration open',
   },
   {
     icon: Radio,
     title: 'Live Spectator Amphitheater',
     description:
-      'Watch high-stakes matches between top 100 contenders live with peer-to-peer sync and celebratory gilded reactions.',
+      'Watch high-stakes matches between top 100 contenders live with peer-to-peer sync and celebratory crimson reactions.',
     status: 'Coming Soon',
+    members: 'P2P Sync',
   },
   {
     icon: Shield,
@@ -46,6 +51,34 @@ const UPCOMING_COMMUNITY_FEATURES = [
     description:
       'Form private gaming circles, participate in guild vs. guild ladder wars, and pool trophy multipliers together.',
     status: 'Planned',
+    members: 'Frontier Clans',
+  },
+];
+
+const RECENT_DISCUSSIONS = [
+  {
+    id: 1,
+    title: 'Corner Gambit strategies in Tic-Tac-Toe vs Master AI',
+    author: 'Vanguard_01',
+    replies: 42,
+    tag: 'Guide',
+    time: '2h ago',
+  },
+  {
+    id: 2,
+    title: 'Breaking 10,000 points in Snake: wall hugging vs zig-zag pathing',
+    author: 'ShadowStrike',
+    replies: 88,
+    tag: 'Tactics',
+    time: '4h ago',
+  },
+  {
+    id: 3,
+    title: 'Seasonal Tournament #4 announcement and qualification rules',
+    author: 'Arcadia_Staff',
+    replies: 156,
+    tag: 'Official',
+    time: '1d ago',
   },
 ];
 
@@ -57,202 +90,200 @@ export default function CommunityPage() {
     e.preventDefault();
     if (email.trim()) {
       setSubscribed(true);
+      playEngage();
     }
   };
 
   return (
-    <div className="relative min-h-screen bg-[var(--background)] text-[var(--text-primary)] flex flex-col selection:bg-[var(--gold)]/30 selection:text-white">
-      {/* Top Navbar */}
-      <Navbar />
-
-      <main className="flex-1 w-full">
+    <AppShell>
+      <div className="space-y-6 pb-8 select-none">
         {/* ========================================================================= */}
         {/* HERO BANNER                                                              */}
         {/* ========================================================================= */}
-        <section className="relative w-full min-h-[38vh] md:min-h-[42vh] flex items-center justify-center overflow-hidden border-b border-[var(--glass-border)]">
-          {/* Layered Dusk & Gold Gradient */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: `
-                radial-gradient(ellipse 80% 60% at 50% 65%, rgba(79, 134, 198, 0.16) 0%, rgba(142, 62, 18, 0.12) 40%, transparent 75%),
-                linear-gradient(180deg, #10121A 0%, #17151D 40%, #251614 75%, #100F0D 100%)
-              `,
-            }}
-          />
-
-          <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-transparent to-black/30 pointer-events-none" />
-
-          {/* Banner Text Content */}
-          <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20 pb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--gold)]/30 bg-[rgba(197,164,109,0.08)] backdrop-blur-md text-[var(--gold)] font-mono text-xs font-semibold tracking-[0.2em] uppercase mb-4"
-            >
+        <div className="rounded-[28px] overflow-hidden bg-gradient-to-r from-[#291010] via-[#351414] to-[#220C0C] border border-white/[0.08] p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl relative">
+          <div className="max-w-xl space-y-2 relative z-10">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#E34242]/20 border border-[#E34242]/40 text-[#E34242] text-xs font-mono font-bold uppercase tracking-wider">
               <Users className="w-3.5 h-3.5" />
-              THE ARCADIA FELLOWSHIP
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold text-[var(--text-primary)] tracking-tight"
-              style={{ fontFamily: 'var(--font-serif, "Playfair Display", Georgia, serif)' }}
-            >
-              Community
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mt-4 text-base sm:text-lg text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed"
-            >
-              Where players forge alliances, challenge reigning masters, and shape
-              the evolution of Arcadia&apos;s neoclassical gaming sanctuary.
-            </motion.p>
-          </div>
-        </section>
-
-        {/* ========================================================================= */}
-        {/* COMING SOON CONTENT & DESCRIPTION                                        */}
-        {/* ========================================================================= */}
-        <section className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          {/* Main Coming Soon Headline Card */}
-          <GlassPanel
-            padding="lg"
-            className="p-8 sm:p-12 mb-16 text-center border-[var(--gold)]/30 shadow-[var(--gold-glow-sm)] relative overflow-hidden"
-          >
-            <div className="max-w-2xl mx-auto space-y-4">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[rgba(197,164,109,0.12)] border border-[var(--gold)]/40 text-[var(--gold)] text-xs font-mono font-semibold uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5" />
-                Under Active Construction
-              </span>
-
-              <h2
-                className="text-3xl sm:text-4xl font-serif font-bold text-[var(--text-primary)]"
-                style={{ fontFamily: 'var(--font-serif, "Playfair Display", Georgia, serif)' }}
-              >
-                The Arcadian Guild Hall Is Arriving
-              </h2>
-
-              <p className="text-base text-[var(--text-secondary)] leading-relaxed">
-                We are architecting a social amphitheater tailored for pure competitive integrity.
-                No algorithmic toxicity — only celebrated accomplishments, high-level theorycrafting,
-                and spirited match play.
-              </p>
+              <span>THE ARCADIA FELLOWSHIP</span>
             </div>
-          </GlassPanel>
+            <h1 className="text-2xl sm:text-4xl font-heading font-black text-white tracking-tight">
+              Community &amp; Guilds
+            </h1>
+            <p className="text-xs sm:text-sm text-[#C7A9A3] leading-relaxed">
+              Where players forge alliances, challenge reigning masters, and shape
+              the evolution of Arcadia&apos;s casual multiplayer gaming universe.
+            </p>
+          </div>
 
-          {/* Upcoming Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-            {UPCOMING_COMMUNITY_FEATURES.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.45, delay: index * 0.1 }}
-                >
-                  <GlassPanel
-                    hover
-                    padding="lg"
-                    className="h-full flex flex-col justify-between border-[var(--glass-border)] hover:border-[var(--glass-border-hover)]"
+          <div className="flex items-center gap-3 relative z-10">
+            <div className="px-4 py-2.5 rounded-2xl bg-[#1C0A0A] border border-white/10 flex items-center gap-2 text-xs text-[#C7A9A3]">
+              <Flame size={15} className="text-[#E34242]" />
+              <span>Online Contenders:</span>
+              <span className="font-mono font-bold text-white">4,812</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* MAIN GUILD DISCUSSIONS & UPCOMING MODULES GRID                           */}
+        {/* ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left: Upcoming Community Features (8 cols) */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#E34242] font-semibold">
+                <Sparkles size={14} />
+                <span>Guild Chambers</span>
+              </div>
+              <span className="text-xs font-mono text-[#8C6D68]">Active Construction</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {UPCOMING_COMMUNITY_FEATURES.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: index * 0.08 }}
+                    className="rounded-[24px] bg-[#291010] border border-white/[0.08] hover:border-[#E34242]/40 p-5 flex flex-col justify-between transition-all duration-200 hover:shadow-[0_8px_24px_rgba(227,66,66,0.15)] group"
                   >
                     <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-[var(--gold-muted)] border border-[var(--glass-border-gold)] text-[var(--gold)] flex items-center justify-center shadow-sm">
-                          <Icon className="w-6 h-6" />
+                      <div className="flex items-center justify-between mb-3.5">
+                        <div className="w-10 h-10 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/30 text-[#E34242] flex items-center justify-center transition-transform group-hover:scale-105">
+                          <Icon className="w-5 h-5" />
                         </div>
-                        <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-[var(--surface-elevated)] border border-[var(--glass-border)] text-[var(--gold)]">
+                        <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[#1C0A0A] border border-white/10 text-[#E34242] font-semibold">
                           {item.status}
                         </span>
                       </div>
 
-                      <h3
-                        className="text-xl font-serif font-bold text-[var(--text-primary)] mb-2"
-                        style={{ fontFamily: 'var(--font-serif, "Playfair Display", Georgia, serif)' }}
-                      >
+                      <h3 className="text-base font-heading font-bold text-white mb-1.5 group-hover:text-[#E34242] transition-colors">
                         {item.title}
                       </h3>
 
-                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                      <p className="text-xs text-[#C7A9A3] leading-relaxed">
                         {item.description}
                       </p>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-[var(--glass-border)] flex items-center text-xs text-[var(--text-muted)] font-mono">
-                      <span>Feature Preview • Phase 2 Roadmap</span>
+                    <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-[#8C6D68] font-mono">
+                      <span>{item.members}</span>
+                      <span className="text-[#E34242] font-semibold">Roadmap</span>
                     </div>
-                  </GlassPanel>
-                </motion.div>
-              );
-            })}
-          </div>
+                  </motion.div>
+                );
+              })}
+            </div>
 
-          {/* ========================================================================= */}
-          {/* EMAIL SIGNUP PLACEHOLDER                                                 */}
-          {/* ========================================================================= */}
-          <div className="max-w-2xl mx-auto">
-            <GlassPanel
-              padding="lg"
-              className="p-8 sm:p-10 text-center border-[var(--gold)]/30"
-            >
-              <div className="w-12 h-12 rounded-full bg-[var(--gold-muted)] border border-[var(--gold)]/30 text-[var(--gold)] flex items-center justify-center mx-auto mb-4 shadow-sm">
-                <Bell className="w-5 h-5" />
+            {/* Recent Live Discussions List */}
+            <div className="rounded-[24px] bg-[#291010] border border-white/[0.08] p-5 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                  <MessageCircle size={15} className="text-[#E34242]" />
+                  <h3 className="text-sm font-heading font-bold text-white uppercase tracking-wider">
+                    Recent Arena Dispatches
+                  </h3>
+                </div>
+                <span className="text-[11px] font-mono text-[#8C6D68]">Live Feed</span>
               </div>
 
-              <h3
-                className="text-2xl font-serif font-bold text-[var(--text-primary)] mb-2"
-                style={{ fontFamily: 'var(--font-serif, "Playfair Display", Georgia, serif)' }}
-              >
+              <div className="space-y-2.5">
+                {RECENT_DISCUSSIONS.map((disc) => (
+                  <div
+                    key={disc.id}
+                    onClick={() => playBlip()}
+                    className="p-3.5 rounded-2xl bg-[#1C0A0A]/70 hover:bg-[#351414] border border-white/[0.04] hover:border-[#E34242]/30 transition-all flex items-center justify-between gap-3 cursor-pointer group"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-md bg-[#E34242]/20 text-[#E34242] font-bold">
+                          {disc.tag}
+                        </span>
+                        <span className="text-xs font-semibold text-white group-hover:text-[#E34242] transition-colors">
+                          {disc.title}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-[11px] text-[#8C6D68] font-mono">
+                        <span>By {disc.author}</span>
+                        <span>•</span>
+                        <span>{disc.time}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-xs font-mono text-[#C7A9A3] shrink-0">
+                      <MessageSquare size={13} className="text-[#E34242]" />
+                      <span>{disc.replies}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Guild Dispatch Newsletter & Clan Founder Callout (4 cols) */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="rounded-[24px] bg-[#291010] border border-[#E34242]/30 p-6 shadow-xl relative overflow-hidden">
+              <div className="w-12 h-12 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/35 text-[#E34242] flex items-center justify-center mb-4 shadow-[0_0_16px_rgba(227,66,66,0.2)]">
+                <Bell className="w-6 h-6" />
+              </div>
+
+              <h3 className="text-xl font-heading font-extrabold text-white mb-2">
                 Join the Guild Dispatch
               </h3>
 
-              <p className="text-sm text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
-                Subscribe for private invitations to community tournaments, patch notes,
-                and guild founder badges.
+              <p className="text-xs text-[#C7A9A3] leading-relaxed mb-5">
+                Subscribe for exclusive tournament access, seasonal balance patches, and early tester founder badges.
               </p>
 
               {subscribed ? (
-                <div className="p-4 bg-[rgba(78,173,123,0.15)] border border-[var(--success)] text-[var(--success)] rounded-xl flex items-center justify-center gap-2 text-sm font-medium">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>Welcome to the Vanguard. We will notify you upon launch.</span>
+                <div className="p-3.5 bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 rounded-2xl flex items-center gap-2.5 text-xs font-bold">
+                  <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
+                  <span>Welcome to the Vanguard. Dispatch confirmed.</span>
                 </div>
               ) : (
-                <form
-                  onSubmit={handleSubscribe}
-                  className="flex flex-col sm:flex-row items-center gap-3"
-                >
+                <form onSubmit={handleSubscribe} className="space-y-3">
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address..."
-                    className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--glass-border)] text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] transition-colors"
+                    placeholder="Enter your console email..."
+                    className="w-full px-4 py-3 rounded-2xl bg-[#1C0A0A] border border-white/10 text-xs text-white placeholder-[#8C6D68] focus:outline-none focus:border-[#E34242] transition-colors"
                   />
                   <button
                     type="submit"
-                    className="gold-btn px-6 py-3 text-sm font-semibold whitespace-nowrap w-full sm:w-auto flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#E34242] to-[#C83A35] hover:from-[#EF5350] hover:to-[#D32F2F] text-white text-xs font-bold shadow-[0_4px_16px_rgba(227,66,66,0.35)] transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <Send className="w-4 h-4 text-[#100F0D]" />
-                    <span>Subscribe</span>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Join Vanguard</span>
                   </button>
                 </form>
               )}
-            </GlassPanel>
-          </div>
-        </section>
-      </main>
+            </div>
 
-      {/* Footer */}
-      <Footer />
-    </div>
+            {/* Frontier Guild Callout Card */}
+            <div className="rounded-[24px] bg-gradient-to-br from-[#291010] to-[#1C0A0A] border border-white/[0.08] p-5 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#E34242] font-semibold">
+                <UserPlus size={14} />
+                <span>Founding Guilds</span>
+              </div>
+              <h4 className="text-sm font-heading font-bold text-white">
+                Register Your Clan
+              </h4>
+              <p className="text-xs text-[#C7A9A3] leading-relaxed">
+                Arcadia clans will receive reserved tags, dedicated voice frequency channels, and private tournaments.
+              </p>
+              <div className="pt-1">
+                <span className="inline-block text-[11px] font-mono text-[#E34242] font-bold">
+                  Applications open in Season 2 →
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </AppShell>
   );
 }

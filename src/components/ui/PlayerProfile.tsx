@@ -25,7 +25,6 @@ export interface PlayerProfileProps {
   className?: string;
 }
 
-// Generate initials from username
 function getInitials(name: string): string {
   const parts = name.replace(/[^a-zA-Z0-9 ]/g, ' ').trim().split(/\s+/);
   if (parts.length >= 2) {
@@ -48,16 +47,17 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({
   return (
     <GlassPanel
       padding="lg"
-      className={`relative overflow-hidden ${className}`}
-      initial={{ opacity: 0, y: 20 }}
+      showFlare
+      className={`relative overflow-hidden bg-[var(--surface-primary)] border border-[rgba(240,163,82,0.2)] ${className}`}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
     >
-      {/* Background ambient decorative glow */}
+      {/* Background ambient warm amber glow */}
       <div
-        className="pointer-events-none absolute -top-16 -right-16 w-52 h-52 rounded-full opacity-30 blur-3xl"
+        className="pointer-events-none absolute -top-16 -right-16 w-52 h-52 rounded-full opacity-25 blur-3xl"
         style={{
-          background: 'radial-gradient(circle, var(--gold) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, #F0A352 0%, transparent 70%)',
         }}
       />
 
@@ -65,24 +65,13 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
         {/* Avatar Circle with Level Badge */}
         <div className="relative shrink-0">
-          <div
-            className="w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center font-serif text-2xl md:text-3xl font-bold text-[var(--gold-light)] select-none border-2 border-[var(--gold)]"
-            style={{
-              background: 'radial-gradient(circle at 35% 35%, #372A1C 0%, #151310 100%)',
-              boxShadow: 'var(--gold-glow, 0 0 24px rgba(197, 164, 109, 0.35))',
-            }}
-          >
+          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center font-heading text-2xl md:text-3xl font-black text-[#0D0B09] select-none border-2 border-[var(--accent-primary)] bg-gradient-to-br from-[#FFC078] via-[#F0A352] to-[#C96F3B] shadow-[0_0_20px_rgba(240,163,82,0.45)]">
             {initials}
           </div>
 
           {/* Level Badge Overlay */}
-          <div
-            className="absolute -bottom-2 -right-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold text-[#100F0D] border border-white/30 shadow-md flex items-center gap-1"
-            style={{
-              background: 'var(--gold-gradient, linear-gradient(135deg, #C5A46D 0%, #80613C 100%))',
-            }}
-          >
-            <Shield className="w-3 h-3 fill-current" />
+          <div className="absolute -bottom-2 -right-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold text-white border border-white/20 shadow-md flex items-center gap-1 bg-gradient-to-r from-[#C96F3B] to-[#F0A352]">
+            <Shield className="w-3 h-3 fill-current text-white" />
             <span>LVL {player.level}</span>
           </div>
         </div>
@@ -90,23 +79,19 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({
         {/* Player Identity Information */}
         <div className="flex-1 text-center sm:text-left min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
-            <h2
-              className="text-2xl md:text-3xl font-serif font-bold text-[var(--text-primary)] tracking-tight truncate"
-              style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-            >
+            <h2 className="text-2xl md:text-3xl font-heading font-black text-[#FFF8F0] tracking-tight truncate">
               {player.username}
             </h2>
 
             {player.title && (
-              <span className="inline-flex items-center gap-1 self-center sm:self-auto text-xs font-semibold px-2.5 py-0.5 rounded-full text-[var(--gold)] bg-[var(--gold-muted)] border border-[var(--glass-border-gold)]">
-                <Sparkles className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1 self-center sm:self-auto text-xs font-semibold px-2.5 py-0.5 rounded-full text-[#FFF8F0] bg-[var(--accent-primary)]/20 border border-[var(--accent-primary)]/40">
+                <Sparkles className="w-3 h-3 text-[var(--accent-primary)]" />
                 <span>{player.title}</span>
               </span>
             )}
           </div>
 
-          {/* Join Date */}
-          <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-[var(--text-muted)] mt-1">
+          <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-[var(--text-muted)] mt-1 font-mono">
             <Calendar className="w-3.5 h-3.5" />
             <span>Joined {player.joinDate}</span>
           </div>
@@ -114,82 +99,75 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({
       </div>
 
       {/* XP Progress Section */}
-      <div className="mt-7 pt-5 border-t border-[var(--glass-border)]">
+      <div className="mt-7 pt-5 border-t border-[rgba(240,163,82,0.15)]">
         <div className="flex items-center justify-between text-xs font-medium mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-[var(--text-primary)] font-semibold">
+            <span className="text-[#FFF8F0] font-semibold">
               Level {player.level}
             </span>
             <span className="text-[var(--text-muted)]">&rarr;</span>
-            <span className="text-[var(--gold)] font-semibold">
+            <span className="text-[var(--accent-primary)] font-bold">
               Level {player.level + 1}
             </span>
           </div>
           <div className="font-mono text-xs text-[var(--text-secondary)]">
-            <span className="text-[var(--gold-light)] font-semibold">{formattedXp}</span>
+            <span className="text-[#FFF8F0] font-semibold">{formattedXp}</span>
             <span className="text-[var(--text-muted)]"> / {formattedXpToNext} XP</span>
-            <span className="text-[var(--text-muted)] ml-1.5">({xpPercent}%)</span>
+            <span className="text-[var(--accent-primary)] ml-1.5 font-bold">({xpPercent}%)</span>
           </div>
         </div>
 
         {/* Progress Bar Track */}
-        <div className="w-full h-3 rounded-full bg-[var(--surface-elevated)] border border-[var(--glass-border)] overflow-hidden p-0.5">
+        <div className="w-full h-2.5 rounded-full bg-[#0D0B09] border border-[rgba(240,163,82,0.2)] overflow-hidden p-0.5">
           <motion.div
+            className="h-full rounded-full bg-gradient-to-r from-[#C96F3B] via-[#F0A352] to-[#FFC078] shadow-[0_0_12px_rgba(240,163,82,0.6)]"
             initial={{ width: 0 }}
             animate={{ width: `${xpPercent}%` }}
-            transition={{ duration: 1.1, ease: [0.4, 0, 0.2, 1], delay: 0.15 }}
-            className="h-full rounded-full relative"
-            style={{
-              background: 'var(--gold-gradient, linear-gradient(135deg, #C5A46D 0%, #80613C 100%))',
-              boxShadow: 'var(--gold-glow-sm)',
-            }}
-          >
-            {/* Shimmer light effect at the tip of the bar */}
-            <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/60 rounded-full blur-[1px]" />
-          </motion.div>
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
+          />
         </div>
       </div>
 
-      {/* Quick Player Stats Grid (if available) */}
+      {/* Quick Stats Grid */}
       {stats && (
-        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3 rounded-[var(--border-radius-md,12px)] bg-[var(--surface-card)] border border-[var(--glass-border)] text-center">
-            <div className="flex items-center justify-center gap-1 text-[var(--gold)] mb-1">
-              <Gamepad2 className="w-3.5 h-3.5" />
-              <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Played</span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-[rgba(240,163,82,0.15)]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[rgba(240,163,82,0.12)] border border-[rgba(240,163,82,0.25)] flex items-center justify-center text-[var(--accent-primary)] shrink-0">
+              <Gamepad2 className="w-4 h-4" />
             </div>
-            <div className="font-mono text-lg font-bold text-[var(--text-primary)]">
-              {stats.gamesPlayed}
-            </div>
-          </div>
-
-          <div className="p-3 rounded-[var(--border-radius-md,12px)] bg-[var(--surface-card)] border border-[var(--glass-border)] text-center">
-            <div className="flex items-center justify-center gap-1 text-[var(--success)] mb-1">
-              <Trophy className="w-3.5 h-3.5" />
-              <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Wins</span>
-            </div>
-            <div className="font-mono text-lg font-bold text-[var(--text-primary)]">
-              {stats.wins}
+            <div>
+              <div className="text-xs text-[var(--text-muted)] font-mono uppercase">Played</div>
+              <div className="font-mono font-bold text-sm text-[#FFF8F0]">{stats.gamesPlayed}</div>
             </div>
           </div>
 
-          <div className="p-3 rounded-[var(--border-radius-md,12px)] bg-[var(--surface-card)] border border-[var(--glass-border)] text-center">
-            <div className="flex items-center justify-center gap-1 text-[var(--gold)] mb-1">
-              <Swords className="w-3.5 h-3.5" />
-              <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Score</span>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/12 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shrink-0">
+              <Trophy className="w-4 h-4" />
             </div>
-            <div className="font-mono text-lg font-bold text-[var(--gold)]">
-              {new Intl.NumberFormat('en-US').format(stats.totalScore)}
+            <div>
+              <div className="text-xs text-[var(--text-muted)] font-mono uppercase">Victories</div>
+              <div className="font-mono font-bold text-sm text-[#FFF8F0]">{stats.wins}</div>
             </div>
           </div>
 
-          <div className="p-3 rounded-[var(--border-radius-md,12px)] bg-[var(--surface-card)] border border-[var(--glass-border)] text-center">
-            <div className="flex items-center justify-center gap-1 text-[var(--info)] mb-1">
-              <Clock className="w-3.5 h-3.5" />
-              <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Time</span>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/12 border border-amber-500/25 flex items-center justify-center text-amber-400 shrink-0">
+              <Swords className="w-4 h-4" />
             </div>
-            <div className="font-mono text-lg font-bold text-[var(--text-primary)]">
-              {stats.playtime}
+            <div>
+              <div className="text-xs text-[var(--text-muted)] font-mono uppercase">Rating</div>
+              <div className="font-mono font-bold text-sm text-[#FFF8F0]">{stats.totalScore}</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-sky-500/12 border border-sky-500/25 flex items-center justify-center text-sky-400 shrink-0">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs text-[var(--text-muted)] font-mono uppercase">Playtime</div>
+              <div className="font-mono font-bold text-sm text-[#FFF8F0]">{stats.playtime}</div>
             </div>
           </div>
         </div>

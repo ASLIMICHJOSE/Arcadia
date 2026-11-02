@@ -11,11 +11,12 @@ import {
   Eye,
   EyeOff,
   Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import GlassPanel from '@/components/ui/GlassPanel';
+import AppShell from '@/components/layout/AppShell';
+import { playBlip, playEngage } from '@/lib/sound';
+import { saveUserSession } from '@/lib/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,69 +29,52 @@ export default function LoginPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Visual-only authentication flow navigates to dashboard
+    playEngage();
+    const derivedName = email.includes('@') ? email.split('@')[0].toUpperCase() : email.toUpperCase();
+    saveUserSession(derivedName || 'CONTENDER', email);
     setTimeout(() => {
-      router.push('/dashboard');
-    }, 600);
+      router.push('/');
+    }, 500);
   };
 
   return (
-    <div className="relative min-h-screen bg-[var(--background)] text-[var(--text-primary)] flex flex-col selection:bg-[var(--gold)]/30 selection:text-white">
-      {/* Top Navbar */}
-      <Navbar />
-
-      <main className="flex-1 w-full flex items-center justify-center relative overflow-hidden py-16 sm:py-24 px-4 sm:px-6">
-        {/* Layered Atmospheric Western Dusk & Gold Gradient */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `
-              radial-gradient(circle at 50% 45%, rgba(197, 164, 109, 0.16) 0%, rgba(104, 44, 16, 0.14) 35%, transparent 70%),
-              linear-gradient(180deg, #100F0D 0%, #191417 35%, #251610 65%, #100F0D 100%)
-            `,
-          }}
-        />
-
-        {/* Ambient Glow Orb */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[var(--gold)]/10 blur-[100px] pointer-events-none" />
-
-        {/* Centered Login Glass Panel Container */}
+    <AppShell>
+      <div className="min-h-[70vh] flex items-center justify-center py-6 select-none">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-10 w-full max-w-md"
+          transition={{ duration: 0.45 }}
+          className="w-full max-w-md"
         >
-          <GlassPanel
-            padding="lg"
-            className="p-8 sm:p-10 border-[var(--glass-border)] shadow-[var(--glass-shadow-lg)] backdrop-blur-xl"
-          >
+          <div className="rounded-[28px] bg-[#291010] border border-white/[0.08] p-7 sm:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative overflow-hidden">
             {/* Header */}
-            <div className="text-center mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-[var(--gold-muted)] border border-[var(--glass-border-gold)] text-[var(--gold)] flex items-center justify-center mx-auto mb-4 shadow-[var(--gold-glow-sm)]">
-                <Sparkles className="w-6 h-6 text-[var(--gold)]" />
+            <div className="text-center mb-7">
+              <div className="w-12 h-12 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/35 text-[#E34242] flex items-center justify-center mx-auto mb-3.5 shadow-[0_0_16px_rgba(227,66,66,0.25)]">
+                <Sparkles className="w-6 h-6" />
               </div>
 
-              <h1
-                className="text-3xl font-serif font-bold text-[var(--text-primary)] tracking-tight"
-                style={{ fontFamily: 'var(--font-serif, "Playfair Display", Georgia, serif)' }}
-              >
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#E34242]/20 border border-[#E34242]/40 text-[#E34242] text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
+                <ShieldCheck size={12} />
+                CONSOLE AUTHENTICATION
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl font-heading font-black text-white tracking-tight">
                 Welcome Back
               </h1>
-              <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              <p className="mt-1.5 text-xs text-[#C7A9A3]">
                 Enter your credentials to access your player profile and match records.
               </p>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Field */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-mono uppercase tracking-wider text-[var(--text-secondary)]">
-                  Email Address
+              <div className="space-y-1">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-[#C7A9A3]">
+                  Player Handle or Email
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C6D68]">
                     <Mail className="w-4 h-4" />
                   </div>
                   <input
@@ -99,30 +83,31 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="scout@frontier.arcadia"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--glass-border)] text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#1C0A0A] border border-white/10 text-xs text-white placeholder-[#8C6D68] focus:outline-none focus:border-[#E34242] transition-colors"
                   />
                 </div>
               </div>
 
               {/* Password Field */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[var(--text-secondary)]">
-                    Password
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-[#C7A9A3]">
+                    Security Key
                   </label>
                   <Link
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
+                      playBlip();
                       alert('Password recovery link has been simulated.');
                     }}
-                    className="text-xs text-[var(--gold)] hover:text-[var(--gold-light)] transition-colors"
+                    className="text-[11px] text-[#E34242] hover:text-white transition-colors"
                   >
-                    Forgot Password?
+                    Forgot Key?
                   </Link>
                 </div>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C6D68]">
                     <Lock className="w-4 h-4" />
                   </div>
                   <input
@@ -131,12 +116,12 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--glass-border)] text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)] focus:ring-1 focus:ring-[var(--gold)] transition-colors"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#1C0A0A] border border-white/10 text-xs text-white placeholder-[#8C6D68] focus:outline-none focus:border-[#E34242] transition-colors"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#8C6D68] hover:text-white transition-colors cursor-pointer"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -151,9 +136,9 @@ export default function LoginPage() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded bg-[var(--surface)] border-[var(--glass-border)] text-[var(--gold)] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[var(--gold)]"
+                    className="w-4 h-4 rounded bg-[#1C0A0A] border-white/10 text-[#E34242] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#E34242]"
                   />
-                  <span className="text-xs text-[var(--text-secondary)]">Remember my session</span>
+                  <span className="text-xs text-[#C7A9A3]">Remember this station</span>
                 </label>
               </div>
 
@@ -161,40 +146,38 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="gold-btn w-full py-3 text-sm font-semibold mt-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#E34242] to-[#C83A35] hover:from-[#EF5350] hover:to-[#D32F2F] text-white text-xs font-bold shadow-[0_4px_16px_rgba(227,66,66,0.35)] transition-all flex items-center justify-center gap-2 mt-3 cursor-pointer"
               >
                 {loading ? (
                   <span className="inline-flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-[#100F0D] border-t-transparent rounded-full animate-spin" />
-                    Entering Arcadia...
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Connecting Station...
                   </span>
                 ) : (
                   <>
-                    <span>Sign In</span>
-                    <ArrowRight className="w-4 h-4 text-[#100F0D]" />
+                    <span>Initialize Session</span>
+                    <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
             </form>
 
             {/* Bottom Register Link */}
-            <div className="mt-8 pt-6 border-t border-[var(--glass-border)] text-center">
-              <p className="text-xs text-[var(--text-secondary)]">
-                Don&apos;t have an account?{' '}
+            <div className="mt-6 pt-5 border-t border-white/[0.08] text-center">
+              <p className="text-xs text-[#C7A9A3]">
+                Need a new license?{' '}
                 <Link
                   href="/register"
-                  className="font-semibold text-[var(--gold)] hover:text-[var(--gold-light)] transition-colors underline-offset-4 hover:underline ml-1"
+                  onClick={() => playBlip()}
+                  className="font-bold text-[#E34242] hover:text-white transition-colors ml-1"
                 >
-                  Sign Up
+                  Create Contender ID
                 </Link>
               </p>
             </div>
-          </GlassPanel>
+          </div>
         </motion.div>
-      </main>
-
-      {/* Footer */}
-      <Footer />
-    </div>
+      </div>
+    </AppShell>
   );
 }

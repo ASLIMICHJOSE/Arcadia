@@ -57,16 +57,13 @@ export default function AchievementsPage() {
   return (
     <div className="space-y-8 pb-16">
       {/* Page Header */}
-      <div className="border-b border-[var(--glass-border)] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="border-b border-[var(--border-subtle)] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--gold)] mb-1">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--accent-primary)] mb-1">
             <Award size={14} />
             <span>Honors & Distinctions</span>
           </div>
-          <h1
-            className="text-3xl sm:text-4xl font-serif font-bold text-[var(--text-primary)] tracking-tight"
-            style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-          >
+          <h1 className="text-3xl sm:text-4xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight">
             Achievements
           </h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1.5 max-w-xl">
@@ -75,21 +72,21 @@ export default function AchievementsPage() {
         </div>
 
         {/* Overview Stats Badge */}
-        <div className="flex items-center gap-4 p-3 rounded-2xl bg-[var(--surface-elevated)] border border-[var(--glass-border)]">
+        <div className="flex items-center gap-4 p-3 rounded-2xl bg-[var(--surface-primary)] border border-[var(--border-subtle)]">
           <div className="flex flex-col">
             <span className="text-[10px] uppercase font-mono tracking-wider text-[var(--text-muted)]">
               Unlocked
             </span>
-            <span className="text-sm font-bold font-mono text-[var(--gold-light)]">
+            <span className="text-sm font-bold font-mono text-[var(--text-primary)]">
               {unlockedCount} / {totalCount} ({overallPercent}%)
             </span>
           </div>
-          <div className="h-8 w-px bg-[var(--glass-border)]" />
+          <div className="h-8 w-px bg-[var(--border-subtle)]" />
           <div className="flex flex-col">
             <span className="text-[10px] uppercase font-mono tracking-wider text-[var(--text-muted)]">
               Reward XP
             </span>
-            <span className="text-sm font-bold font-mono text-[#4EAD7B]">
+            <span className="text-sm font-bold font-mono text-[var(--accent-primary)]">
               +{totalXpEarned.toLocaleString()} XP
             </span>
           </div>
@@ -114,16 +111,16 @@ export default function AchievementsPage() {
                 padding="lg"
                 className={`relative flex flex-col justify-between h-full transition-all duration-300 ${
                   isUnlocked
-                    ? 'border-[var(--gold)] shadow-[var(--gold-glow-sm)] bg-[#211C16]/85 hover:shadow-[var(--gold-glow)]'
-                    : 'opacity-70 bg-[#161411]/60 border-[var(--glass-border)] hover:opacity-85'
+                    ? 'border-[rgba(227,66,66,0.35)] shadow-[0_4px_20px_rgba(227,66,66,0.15)] bg-[var(--surface-primary)] hover:border-[var(--accent-primary)]'
+                    : 'opacity-70 bg-[var(--surface-primary)]/60 border-[var(--border-subtle)] hover:opacity-85'
                 }`}
               >
                 {/* Background Glow for Unlocked */}
                 {isUnlocked && (
                   <div
-                    className="pointer-events-none absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-25 blur-2xl"
+                    className="pointer-events-none absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20 blur-2xl"
                     style={{
-                      background: 'radial-gradient(circle, var(--gold) 0%, transparent 70%)',
+                      background: 'radial-gradient(circle, #E34242 0%, transparent 70%)',
                     }}
                   />
                 )}
@@ -134,8 +131,8 @@ export default function AchievementsPage() {
                     <div
                       className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform ${
                         isUnlocked
-                          ? 'bg-gradient-to-br from-[#372A1C] to-[#1A1713] border border-[var(--gold)] text-[var(--gold)] shadow-md'
-                          : 'bg-[var(--surface-elevated)] border border-[var(--glass-border)] text-[var(--text-muted)]'
+                          ? 'bg-[var(--surface-secondary)] border border-[rgba(227,66,66,0.4)] text-[var(--accent-primary)] shadow-[0_0_12px_rgba(227,66,66,0.2)]'
+                          : 'bg-[var(--surface-secondary)] border border-[var(--border-subtle)] text-[var(--text-muted)]'
                       }`}
                     >
                       <Icon size={24} />
@@ -148,10 +145,10 @@ export default function AchievementsPage() {
                             achievement.tier === 'Platinum'
                               ? 'text-cyan-300 border-cyan-500/40 bg-cyan-950/30'
                               : achievement.tier === 'Gold'
-                              ? 'text-[var(--gold-light)] border-[var(--gold)]/40 bg-[var(--gold-muted)]'
+                              ? 'text-amber-400 border-amber-500/40 bg-amber-950/30'
                               : achievement.tier === 'Silver'
                               ? 'text-slate-300 border-slate-400/40 bg-slate-800/30'
-                              : 'text-amber-500 border-amber-700/40 bg-amber-950/30'
+                              : 'text-rose-400 border-rose-500/40 bg-rose-950/30'
                           }`}
                         >
                           {achievement.tier}
@@ -159,12 +156,12 @@ export default function AchievementsPage() {
                       )}
 
                       {isUnlocked ? (
-                        <span className="flex items-center gap-1 text-[11px] font-semibold text-[#4EAD7B] bg-[#4EAD7B]/10 border border-[#4EAD7B]/30 px-2 py-0.5 rounded-full">
+                        <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded-full">
                           <CheckCircle2 size={12} />
                           <span>Unlocked</span>
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1 text-[11px] font-medium text-[var(--text-muted)] bg-[var(--surface-elevated)] border border-[var(--glass-border)] px-2 py-0.5 rounded-full">
+                        <span className="flex items-center gap-1 text-[11px] font-medium text-[var(--text-muted)] bg-[var(--surface-secondary)] border border-[var(--border-subtle)] px-2 py-0.5 rounded-full">
                           <Lock size={12} />
                           <span>Locked</span>
                         </span>
@@ -173,12 +170,7 @@ export default function AchievementsPage() {
                   </div>
 
                   {/* Achievement Name & Description */}
-                  <h3
-                    className={`text-lg font-serif font-bold tracking-tight mb-1.5 ${
-                      isUnlocked ? 'text-[var(--gold-light)]' : 'text-[var(--text-secondary)]'
-                    }`}
-                    style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-                  >
+                  <h3 className="text-lg font-heading font-bold tracking-tight mb-1.5 text-[var(--text-primary)]">
                     {achievement.name}
                   </h3>
 
@@ -195,7 +187,7 @@ export default function AchievementsPage() {
                     </span>
                     <span
                       className={`text-xs font-bold ${
-                        isUnlocked ? 'text-[var(--gold)]' : 'text-[var(--text-secondary)]'
+                        isUnlocked ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'
                       }`}
                     >
                       {achievement.progress}%
@@ -203,12 +195,12 @@ export default function AchievementsPage() {
                   </div>
 
                   {/* Progress Bar Track */}
-                  <div className="w-full h-2 rounded-full bg-[var(--surface-elevated)] border border-[var(--glass-border)] overflow-hidden">
+                  <div className="w-full h-2 rounded-full bg-[var(--surface-secondary)] border border-[var(--border-subtle)] overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-700 ${
                         isUnlocked
-                          ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] shadow-[var(--gold-glow-sm)]'
-                          : 'bg-[var(--gold-dark)]/60'
+                          ? 'bg-gradient-to-r from-[#8D3434] to-[#E34242] shadow-[0_0_8px_rgba(227,66,66,0.5)]'
+                          : 'bg-[#8D3434]/50'
                       }`}
                       style={{ width: `${achievement.progress}%` }}
                     />
@@ -216,13 +208,13 @@ export default function AchievementsPage() {
 
                   {/* XP Reward Label */}
                   {achievement.xpReward && (
-                    <div className="mt-3.5 pt-3 border-t border-[var(--glass-border)] flex items-center justify-between text-xs">
+                    <div className="mt-3.5 pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs">
                       <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
                         Distinction Reward
                       </span>
                       <span
                         className={`font-mono text-xs font-semibold flex items-center gap-1 ${
-                          isUnlocked ? 'text-[var(--gold-light)]' : 'text-[var(--text-muted)]'
+                          isUnlocked ? 'text-[var(--accent-primary)]' : 'text-[var(--text-muted)]'
                         }`}
                       >
                         <Sparkles size={12} />

@@ -6,14 +6,9 @@ import {
   Trophy,
   Crown,
   Medal,
-  Calendar,
-  Sparkles,
-  Users,
-  Shield,
-  Swords,
 } from 'lucide-react';
 import { GlassPanel, LeaderboardPreview } from '@/components/ui';
-import { DEMO_LEADERBOARD, LeaderboardEntry } from '@/lib/constants';
+import { DEMO_LEADERBOARD } from '@/lib/constants';
 
 type TimeFilter = 'All Time' | 'This Month' | 'This Week';
 
@@ -28,16 +23,13 @@ export default function LeaderboardPage() {
   return (
     <div className="space-y-8 pb-16">
       {/* Page Header with Time Filter Tabs */}
-      <div className="border-b border-[var(--glass-border)] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="border-b border-[var(--border-subtle)] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--gold)] mb-1">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--accent-primary)] mb-1">
             <Trophy size={14} />
-            <span>Coliseum Pantheon</span>
+            <span>Coliseum Standings</span>
           </div>
-          <h1
-            className="text-3xl sm:text-4xl font-serif font-bold text-[var(--text-primary)] tracking-tight"
-            style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-          >
+          <h1 className="text-3xl sm:text-4xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight">
             Leaderboard
           </h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1.5 max-w-xl">
@@ -46,7 +38,7 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Visual Time Filter Tabs */}
-        <div className="flex items-center p-1 rounded-2xl bg-[var(--surface-elevated)] border border-[var(--glass-border)] self-start md:self-auto">
+        <div className="flex items-center p-1 rounded-2xl bg-[var(--surface-primary)] border border-[var(--border-subtle)] self-start md:self-auto">
           {(['All Time', 'This Month', 'This Week'] as TimeFilter[]).map((tab) => {
             const isActive = activeTab === tab;
             return (
@@ -55,14 +47,14 @@ export default function LeaderboardPage() {
                 onClick={() => setActiveTab(tab)}
                 className={`relative px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   isActive
-                    ? 'text-[#100F0D] shadow-md'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                    ? 'text-white shadow-md'
+                    : 'text-[var(--text-secondary)] hover:text-white'
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="leaderboard-active-tab"
-                    className="absolute inset-0 bg-gradient-to-r from-[var(--gold-light)] via-[var(--gold)] to-[var(--gold-dark)] rounded-xl -z-10"
+                    className="absolute inset-0 bg-gradient-to-r from-[#E34242] to-[#C83A35] rounded-xl -z-10 shadow-[0_0_12px_rgba(227,66,66,0.35)]"
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   />
                 )}
@@ -80,7 +72,7 @@ export default function LeaderboardPage() {
           <GlassPanel
             hover
             padding="lg"
-            className="order-2 md:order-1 text-center relative border-slate-400/30 bg-slate-900/20"
+            className="order-2 md:order-1 text-center relative border-slate-400/30 bg-[var(--surface-primary)]"
           >
             <div className="w-12 h-12 rounded-full bg-slate-300 text-slate-950 flex items-center justify-center mx-auto mb-3 shadow-md font-bold">
               <Medal size={24} />
@@ -88,7 +80,7 @@ export default function LeaderboardPage() {
             <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300">
               Rank 2 • Archon
             </span>
-            <h3 className="font-serif text-lg font-bold text-[var(--text-primary)] mt-1">
+            <h3 className="font-heading text-lg font-bold text-[var(--text-primary)] mt-1">
               {rank2.name}
             </h3>
             <p className="text-xl font-mono font-bold text-slate-300 mt-2">
@@ -100,27 +92,27 @@ export default function LeaderboardPage() {
           </GlassPanel>
         )}
 
-        {/* Rank 1 (Gold, elevated) */}
+        {/* Rank 1 (Crimson, elevated) */}
         {rank1 && (
           <GlassPanel
             hover
             padding="lg"
-            className="order-1 md:order-2 text-center relative border-[var(--gold)] shadow-[var(--gold-glow)] bg-gradient-to-b from-[#2B241C] to-[#191713] md:-translate-y-3"
+            className="order-1 md:order-2 text-center relative border-[var(--accent-primary)] shadow-[0_0_24px_rgba(227,66,66,0.25)] bg-[var(--surface-primary)] md:-translate-y-3"
           >
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[var(--gold)] text-[#100F0D] text-[10px] font-bold uppercase tracking-widest shadow-md flex items-center gap-1">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[var(--accent-primary)] text-white text-[10px] font-bold uppercase tracking-widest shadow-md flex items-center gap-1">
               <Crown size={12} className="fill-current" />
               <span>Current Imperator</span>
             </div>
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--gold-light)] to-[var(--gold-dark)] text-[#100F0D] flex items-center justify-center mx-auto mt-2 mb-3 shadow-xl font-bold">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#E34242] to-[#C83A35] text-white flex items-center justify-center mx-auto mt-2 mb-3 shadow-xl font-bold">
               <Crown size={32} className="fill-current" />
             </div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--gold)]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--accent-primary)]">
               Rank 1 • {rank1.badge || 'Imperator'}
             </span>
-            <h3 className="font-serif text-2xl font-bold text-[var(--gold-light)] mt-1">
+            <h3 className="font-heading text-2xl font-bold text-white mt-1">
               {rank1.name}
             </h3>
-            <p className="text-2xl font-mono font-bold text-[var(--gold)] mt-2">
+            <p className="text-2xl font-mono font-bold text-[var(--accent-primary)] mt-2">
               {rank1.score.toLocaleString()} <span className="text-xs font-sans text-[var(--text-muted)]">pts</span>
             </p>
             <span className="text-xs text-[var(--text-secondary)] mt-1 block">
@@ -134,18 +126,18 @@ export default function LeaderboardPage() {
           <GlassPanel
             hover
             padding="lg"
-            className="order-3 text-center relative border-amber-700/40 bg-amber-950/20"
+            className="order-3 text-center relative border-[#8D3434]/40 bg-[var(--surface-primary)]"
           >
-            <div className="w-12 h-12 rounded-full bg-[#A58055] text-amber-50 flex items-center justify-center mx-auto mb-3 shadow-md font-bold">
+            <div className="w-12 h-12 rounded-full bg-[#8D3434] text-white flex items-center justify-center mx-auto mb-3 shadow-md font-bold">
               <Medal size={24} />
             </div>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#DFCA9B]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-300">
               Rank 3 • Centurion
             </span>
-            <h3 className="font-serif text-lg font-bold text-[var(--text-primary)] mt-1">
+            <h3 className="font-heading text-lg font-bold text-[var(--text-primary)] mt-1">
               {rank3.name}
             </h3>
-            <p className="text-xl font-mono font-bold text-[#DFCA9B] mt-2">
+            <p className="text-xl font-mono font-bold text-rose-300 mt-2">
               {rank3.score.toLocaleString()} <span className="text-xs font-sans text-[var(--text-muted)]">pts</span>
             </p>
             <span className="text-xs text-[var(--text-secondary)] mt-1 block">

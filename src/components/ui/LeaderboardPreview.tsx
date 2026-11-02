@@ -3,9 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Trophy, Crown, Medal, ArrowRight, Swords } from 'lucide-react';
+import { Trophy, Crown, Medal, ArrowRight } from 'lucide-react';
 import GlassPanel from './GlassPanel';
 import { DEMO_LEADERBOARD, LeaderboardEntry } from '@/lib/constants';
+import { playBlip } from '@/lib/sound';
 
 export interface LeaderboardPreviewProps {
   entries?: readonly LeaderboardEntry[] | LeaderboardEntry[];
@@ -38,10 +39,9 @@ function getRankBadge(rank: number) {
   if (rank === 1) {
     return (
       <div
-        className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs text-[#100F0D] shrink-0"
+        className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs text-[#0D0B09] shrink-0 shadow-[0_0_12px_rgba(240,163,82,0.6)]"
         style={{
-          background: 'var(--gold-gradient, linear-gradient(135deg, #DFCA9B 0%, #C5A46D 100%))',
-          boxShadow: 'var(--gold-glow-sm)',
+          background: 'linear-gradient(135deg, #FFC078 0%, #F0A352 50%, #D97706 100%)',
         }}
       >
         <Crown className="w-3.5 h-3.5 fill-current" />
@@ -60,8 +60,8 @@ function getRankBadge(rank: number) {
   if (rank === 3) {
     return (
       <div
-        className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs text-amber-50 shrink-0 shadow-sm"
-        style={{ background: 'var(--bronze-light, #A58055)' }}
+        className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs text-amber-100 shrink-0 shadow-sm"
+        style={{ background: 'linear-gradient(135deg, #C96F3B 0%, #8D542E 100%)' }}
       >
         <Medal className="w-3.5 h-3.5" />
       </div>
@@ -69,7 +69,7 @@ function getRankBadge(rank: number) {
   }
 
   return (
-    <div className="w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-semibold text-[var(--text-muted)] bg-[var(--surface-elevated)] shrink-0 border border-[var(--glass-border)]">
+    <div className="w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-semibold text-[var(--text-muted)] bg-[var(--surface-secondary)] shrink-0 border border-[var(--border-subtle)]">
       {rank}
     </div>
   );
@@ -87,38 +87,31 @@ function getInitials(name: string): string {
 export const LeaderboardPreview: React.FC<LeaderboardPreviewProps> = ({
   entries = DEMO_LEADERBOARD,
   limit = 5,
-  title = 'Global Leaderboard',
+  title = 'Global Standings',
   viewAllHref = '/leaderboard',
   className = '',
 }) => {
   const displayedEntries = entries.slice(0, limit);
 
   return (
-    <GlassPanel padding="lg" className={`flex flex-col ${className}`}>
+    <GlassPanel padding="lg" showFlare className={`flex flex-col bg-[var(--surface-primary)] border-[rgba(240,163,82,0.2)] ${className}`}>
       {/* Top Header */}
-      <div className="flex items-center justify-between pb-4 mb-3 border-b border-[var(--glass-border)]">
+      <div className="flex items-center justify-between pb-4 mb-3 border-b border-[rgba(240,163,82,0.15)]">
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-[var(--border-radius-sm,8px)] flex items-center justify-center text-[var(--gold)]"
-            style={{
-              background: 'var(--gold-muted)',
-              border: '1px solid var(--glass-border-gold)',
-            }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--accent-primary)] bg-[var(--surface-secondary)] border border-[rgba(240,163,82,0.3)] shadow-[0_0_12px_rgba(240,163,82,0.2)]"
           >
             <Trophy className="w-5 h-5" />
           </div>
           <div>
-            <h3
-              className="text-lg font-serif font-bold text-[var(--text-primary)]"
-              style={{ fontFamily: 'var(--font-serif, "Playfair Display", serif)' }}
-            >
+            <h3 className="text-lg font-heading font-black text-[var(--text-primary)]">
               {title}
             </h3>
             <p className="text-xs text-[var(--text-secondary)]">Top arena champions</p>
           </div>
         </div>
 
-        <span className="text-[11px] font-mono px-2.5 py-1 rounded-full text-[var(--gold-light)] bg-[var(--gold-muted)] border border-[var(--glass-border-gold)]">
+        <span className="text-[11px] font-mono px-2.5 py-1 rounded-full text-[var(--accent-primary)] bg-[rgba(240,163,82,0.12)] border border-[rgba(240,163,82,0.3)] font-semibold">
           Live Standings
         </span>
       </div>
@@ -140,10 +133,10 @@ export const LeaderboardPreview: React.FC<LeaderboardPreviewProps> = ({
               key={entry.name + entry.rank}
               variants={rowVariants}
               whileHover={{ x: 2, transition: { duration: 0.15 } }}
-              className={`flex items-center justify-between p-2.5 md:p-3 rounded-[var(--border-radius-md,12px)] transition-all ${
+              className={`flex items-center justify-between p-2.5 md:p-3 rounded-xl transition-all ${
                 isTopThree
-                  ? 'bg-[rgba(255,255,255,0.03)] border border-[var(--glass-border)]'
-                  : 'hover:bg-[var(--glass-hover)] border border-transparent'
+                  ? 'bg-[var(--surface-secondary)]/80 border border-[rgba(240,163,82,0.2)] shadow-sm'
+                  : 'hover:bg-[var(--surface-secondary)]/50 border border-transparent'
               }`}
             >
               {/* Left Side: Rank, Avatar, Name */}
@@ -154,83 +147,70 @@ export const LeaderboardPreview: React.FC<LeaderboardPreviewProps> = ({
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-[var(--text-primary)] shrink-0 select-none ${
                     entry.rank === 1
-                      ? 'ring-2 ring-[var(--gold)] shadow-[var(--gold-glow-sm)]'
+                      ? 'ring-2 ring-[var(--accent-primary)] shadow-[0_0_10px_rgba(240,163,82,0.5)]'
                       : entry.rank === 2
                       ? 'ring-1 ring-slate-300'
                       : entry.rank === 3
-                      ? 'ring-1 ring-[#A58055]'
-                      : 'border border-[var(--glass-border)]'
+                      ? 'ring-1 ring-[#C96F3B]'
+                      : 'border border-[var(--border-subtle)]'
                   }`}
                   style={{
                     background:
                       entry.rank === 1
-                        ? 'linear-gradient(135deg, #372A1C 0%, #1A1713 100%)'
-                        : 'var(--surface-elevated, #2B241C)',
+                        ? 'linear-gradient(135deg, #241D17 0%, #14100D 100%)'
+                        : 'var(--surface-secondary)',
                   }}
                 >
                   {initials}
                 </div>
 
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`text-sm font-semibold truncate ${
-                        entry.rank === 1
-                          ? 'text-[var(--gold-light)]'
-                          : 'text-[var(--text-primary)]'
-                      }`}
-                    >
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-semibold text-sm text-[var(--text-primary)] truncate">
                       {entry.name}
                     </span>
                     {entry.badge && (
-                      <span className="hidden sm:inline-block text-[10px] font-medium px-2 py-0.5 rounded-full bg-[var(--surface-elevated)] border border-[var(--glass-border)] text-[var(--text-secondary)]">
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[var(--surface-elevated)] border border-[rgba(240,163,82,0.2)] text-[var(--accent-primary)] shrink-0 hidden sm:inline">
                         {entry.badge}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] sm:hidden">
-                    <span>{entry.wins} wins</span>
-                  </div>
+                  <span className="text-[11px] text-[var(--text-muted)] font-mono block">
+                    {entry.wins} wins {entry.winRate && `• ${entry.winRate}`}
+                  </span>
                 </div>
               </div>
 
-              {/* Right Side: Wins & Score */}
-              <div className="flex items-center gap-4 shrink-0 text-right">
-                <div className="hidden sm:flex items-center gap-1 text-xs text-[var(--text-secondary)]">
-                  <Swords className="w-3.5 h-3.5 text-[var(--gold)] opacity-70" />
-                  <span>{entry.wins} wins</span>
-                </div>
-
-                <div className="text-right min-w-[70px]">
-                  <span
-                    className={`font-mono text-sm font-bold tracking-tight ${
-                      entry.rank === 1
-                        ? 'text-[var(--gold)]'
-                        : 'text-[var(--text-primary)]'
-                    }`}
-                  >
-                    {formattedScore}
-                  </span>
-                  <span className="block text-[10px] uppercase font-mono text-[var(--text-muted)]">
-                    pts
-                  </span>
-                </div>
+              {/* Right Side: Score Metric */}
+              <div className="text-right shrink-0 pl-3">
+                <span className="font-mono font-bold text-sm sm:text-base text-[var(--accent-primary)] block">
+                  {formattedScore}
+                </span>
+                <span className="text-[10px] uppercase font-mono tracking-wider text-[var(--text-muted)] block">
+                  ELO Points
+                </span>
               </div>
             </motion.div>
           );
         })}
       </motion.div>
 
-      {/* Bottom Action: View Full Leaderboard */}
-      <div className="mt-5 pt-4 border-t border-[var(--glass-border)]">
-        <Link
-          href={viewAllHref}
-          className="group flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--gold)] hover:text-[var(--gold-light)] transition-colors py-1.5 rounded-[var(--border-radius-sm,8px)] hover:bg-[var(--gold-muted)]"
-        >
-          <span>View Full Leaderboard</span>
-          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-        </Link>
-      </div>
+      {/* Footer Link to Full Hall of Champions */}
+      {viewAllHref && (
+        <div className="pt-4 mt-3 border-t border-[rgba(240,163,82,0.15)] flex items-center justify-between">
+          <span className="text-xs text-[var(--text-muted)] font-mono hidden sm:inline">
+            Rankings reset in 4d 18h
+          </span>
+          <Link
+            href={viewAllHref}
+            onClick={() => playBlip()}
+            className="text-xs font-semibold text-[var(--accent-primary)] hover:text-white transition-colors inline-flex items-center gap-1.5 group font-mono uppercase tracking-wider ml-auto"
+          >
+            <span>View Full Leaderboard</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
+      )}
     </GlassPanel>
   );
 };

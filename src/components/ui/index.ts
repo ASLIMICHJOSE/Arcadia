@@ -26,3 +26,6 @@ export { default as ActivityFeed } from './ActivityFeed';
 
 export * from './PlayerProfile';
 export { default as PlayerProfile } from './PlayerProfile';
+
+export * from './TiltCard';
+export { default as TiltCard } from './TiltCard';
