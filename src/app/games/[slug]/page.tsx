@@ -352,9 +352,11 @@ function GameDetailContent() {
                   padding="none"
                   className="w-full max-w-md aspect-[16/10] overflow-hidden border-[var(--gold)]/40 shadow-[var(--gold-glow-sm)] relative group"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={getGameImage(game.slug)}
+                    src={game.image || `/images/games/${game.slug}.jpg`}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = getGameImage(game.slug);
+                    }}
                     alt={game.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />

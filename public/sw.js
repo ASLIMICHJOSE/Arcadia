@@ -1,9 +1,9 @@
 /**
- * Arcadia Service Worker
- * Production-ready caching strategy, offline support, and lifecycle handling.
+ * Arcadia Service Worker — Phase 2 Production Implementation
+ * High-performance multi-tier caching, game artwork pre-caching, offline support, and lifecycle handling.
  */
 
-const CACHE_VERSION = 'arcadia-v1';
+const CACHE_VERSION = 'arcadia-v2';
 const CACHE_SHELL = `${CACHE_VERSION}-shell`;
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_IMAGES = `${CACHE_VERSION}-images`;
@@ -17,15 +17,22 @@ const APP_SHELL_URLS = [
   '/register',
   '/dashboard',
   '/offline',
+  '/images/hero-western.jpg',
+  '/images/games/tic-tac-toe.jpg',
+  '/images/games/snake.jpg',
+  '/images/games/memory-match.jpg',
+  '/images/games/rock-paper-scissors.jpg',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/manifest.json',
 ];
 
-// Pre-cache App Shell on install
+// Pre-cache App Shell and Essential Game Assets on install
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_SHELL)
       .then((cache) => {
-        // Precache essential URLs; ignore failures for pages not yet visited/rendered during build
         return Promise.allSettled(
           APP_SHELL_URLS.map((url) =>
             fetch(url)
@@ -35,8 +42,7 @@ self.addEventListener('install', (event) => {
                 }
               })
               .catch((err) => {
-                // Ignore precache failure during initial install
-                console.warn(`[SW] Precache failed for ${url}:`, err);
+                console.warn(`[SW] Precache skipped for ${url}:`, err);
               })
           )
         );
@@ -45,7 +51,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Clean up old caches on activation
+// Clean up old obsolete caches on activation
 self.addEventListener('activate', (event) => {
   const currentCaches = [CACHE_SHELL, CACHE_STATIC, CACHE_IMAGES];
 
@@ -56,7 +62,7 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames.map((name) => {
             if (!currentCaches.includes(name)) {
-              console.log(`[SW] Deleting stale cache: ${name}`);
+              console.log(`[SW] Cleaning up obsolete cache: ${name}`);
               return caches.delete(name);
             }
           })
@@ -66,26 +72,30 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event listener
+// Fetch event listener with strict security & performance routing
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // 1. Non-GET or internal schemes (e.g., chrome-extension)
+  // 1. Non-GET or internal schemes (e.g. chrome-extension)
   if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
     return;
   }
 
-  // 2. API requests & Auth endpoints: Network-Only (never cache)
+  // 2. Sensitive Endpoints & APIs: STRICT NETWORK-ONLY (Never cached publicly)
   if (
     url.pathname.startsWith('/api/') ||
     url.pathname.includes('/auth') ||
+    url.pathname.includes('/payment') ||
     request.headers.get('accept')?.includes('application/json')
   ) {
     event.respondWith(
       fetch(request).catch(() => {
         return new Response(
-          JSON.stringify({ error: 'Network unavailable. You are currently offline.' }),
+          JSON.stringify({
+            error: 'Network unavailable. Live matchmaking and account actions require an active connection.',
+            offline: true,
+          }),
           {
             status: 503,
             headers: { 'Content-Type': 'application/json' },
@@ -96,7 +106,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Navigation requests: Network-First -> Cache -> /offline
+  // 3. Navigation requests: Network-First with /offline Fallback
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -118,9 +128,8 @@ self.addEventListener('fetch', (event) => {
           if (offlineFallback) {
             return offlineFallback;
           }
-          // Fallback to root or offline placeholder
           return new Response(
-            '<!DOCTYPE html><html><body><h1>Offline</h1><p>You are offline. Please reconnect to continue exploring Arcadia.</p></body></html>',
+            '<!DOCTYPE html><html><body><h1>Arcadia Offline</h1><p>You have wandered beyond network range. Please reconnect to continue.</p></body></html>',
             {
               headers: { 'Content-Type': 'text/html' },
             }
@@ -130,7 +139,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 4. Image assets: Stale-While-Revalidate
+  // 4. Image & Media Assets: Stale-While-Revalidate
   const isImage =
     request.destination === 'image' ||
     /\.(png|jpg|jpeg|svg|webp|gif|avif|ico)$/i.test(url.pathname);
@@ -175,7 +184,6 @@ self.addEventListener('fetch', (event) => {
             return networkResponse;
           })
           .catch(() => {
-            // Fail silently or handle missing asset
             return new Response('', { status: 408 });
           });
       })
@@ -183,7 +191,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Default: Network with cache fallback
+  // Default: Network with Cache fallback
   event.respondWith(
     caches.match(request).then((cached) => {
       return (
@@ -196,7 +204,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Handle explicit skipWaiting message from client
+// Skip waiting message handler for seamless app updates
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();

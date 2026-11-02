@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
 import { Users, Play, Swords, Gamepad2, Brain, Sparkles, Crown, Star } from 'lucide-react';
@@ -87,8 +87,10 @@ export const GameCard: React.FC<GameCardProps> = ({
   className = '',
   delay = 0,
 }) => {
+  const [imgError, setImgError] = useState(false);
   const { gradient, glowColor, Icon: ThematicIcon } = getCategoryVisuals(game.category, game.slug);
 
+  const imageSrc = game.image || `/images/games/${game.slug}.jpg`;
   const formattedPlayers = new Intl.NumberFormat('en-US').format(game.playerCount);
 
   // Difficulty badge styling
@@ -119,47 +121,44 @@ export const GameCard: React.FC<GameCardProps> = ({
           padding="none"
           className="flex flex-col h-full overflow-hidden border-[var(--glass-border)] group-hover:border-[var(--glass-border-hover)] transition-all duration-300"
         >
-          {/* Top Section: Game Artwork Area with Luxury Gradient & Badges */}
+          {/* Top Section: Cinematic Game Artwork with Dark Overlays & Badges */}
           <div className="relative w-full h-48 md:h-52 overflow-hidden select-none bg-[var(--background-secondary)]">
-            {/* Animated gradient container with zoom on card hover */}
+            {/* Fallback ambient gradient */}
             <div
-              className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-110"
+              className="absolute inset-0"
               style={{ background: gradient }}
-            >
-              {/* Subtle overlay decorative grid */}
-              <div
-                className="absolute inset-0 opacity-20 pointer-events-none"
-                style={{
-                  backgroundImage:
-                    'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
-                  backgroundSize: '24px 24px',
-                }}
+            />
+
+            {/* Cinematic Western Game Artwork with smooth hover zoom */}
+            {!imgError && (
+              <img
+                src={imageSrc}
+                alt={game.name}
+                loading="lazy"
+                onError={() => setImgError(true)}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
               />
+            )}
 
-              {/* Glowing thematic sigil / icon in center */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-3"
-                  style={{
-                    background: 'rgba(16, 15, 13, 0.45)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    boxShadow: `0 0 32px ${glowColor}`,
-                  }}
-                >
-                  <ThematicIcon className="w-10 h-10 text-[var(--gold-light)] drop-shadow" />
-                </div>
-              </div>
+            {/* Dark Cinematic Vignette Overlay for High Legibility */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-elevated)] via-black/35 to-black/20 pointer-events-none" />
 
-              {/* Vignette bottom shadow */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-elevated)] via-transparent to-transparent opacity-80" />
-            </div>
+            {/* Subtle luxury decorative grid overlay */}
+            <div
+              className="absolute inset-0 opacity-15 pointer-events-none"
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
+                backgroundSize: '24px 24px',
+              }}
+            />
 
             {/* Top Left: Category Badge Overlay */}
             <div className="absolute top-3 left-3 z-10">
               <span
                 className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium tracking-wide backdrop-blur-md"
                 style={{
-                  background: 'rgba(16, 15, 13, 0.8)',
+                  background: 'rgba(16, 15, 13, 0.85)',
                   color: 'var(--gold-light)',
                   border: '1px solid var(--glass-border-gold)',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
@@ -179,6 +178,21 @@ export const GameCard: React.FC<GameCardProps> = ({
                 </span>
               </div>
             )}
+
+            {/* Bottom Right: Thematic Emblem Badge */}
+            <div className="absolute bottom-3 right-3 z-10">
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:border-[var(--gold)]"
+                style={{
+                  background: 'rgba(16, 15, 13, 0.75)',
+                  border: '1px solid var(--glass-border-gold)',
+                  boxShadow: `0 0 16px ${glowColor}`,
+                  backdropFilter: 'blur(8px)',
+                }}
+              >
+                <ThematicIcon className="w-4 h-4 text-[var(--gold-light)] drop-shadow" />
+              </div>
+            </div>
           </div>
 
           {/* Bottom Section: Details & Action */}

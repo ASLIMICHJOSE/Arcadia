@@ -73,6 +73,15 @@ export default function HomePage() {
         {/* 1. HERO SECTION (100vh Cinematic Dusk Landscape)                         */}
         {/* ========================================================================= */}
         <section className="relative w-full h-screen min-h-[640px] max-h-[1200px] flex items-center justify-center overflow-hidden">
+          {/* Full-Screen Western Landscape Photography */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+            <img
+              src="/images/hero-western.jpg"
+              alt="Cinematic Western Landscape at Dusk"
+              className="w-full h-full object-cover object-center scale-105 filter brightness-[0.44] contrast-[1.18] saturate-[1.12]"
+            />
+          </div>
+
           {/* Multi-layered Western Dusk Cinematic Sky Gradient */}
           <div
             className="absolute inset-0 pointer-events-none"

@@ -1,22 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 import { PWAProvider } from "@/components/pwa/PWAProvider";
 import { ConnectionStatus } from "@/components/pwa/ConnectionStatus";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-});
 
 export const viewport: Viewport = {
   themeColor: "#100F0D",
@@ -56,9 +43,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${playfair.variable} dark`}
+      className="dark"
       suppressHydrationWarning
     >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-screen bg-[var(--background)] text-[var(--text-primary)] font-sans antialiased flex flex-col selection:bg-[var(--gold)]/30 selection:text-white">
         <PWAProvider>
           <ConnectionStatus />
