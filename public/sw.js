@@ -17,6 +17,7 @@ const APP_SHELL_URLS = [
   '/register',
   '/dashboard',
   '/offline',
+  '/images/hero-character.jpg',
   '/images/hero-western.jpg',
   '/images/games/tic-tac-toe.jpg',
   '/images/games/snake.jpg',

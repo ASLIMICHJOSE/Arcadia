@@ -55,11 +55,11 @@ function getCategoryVisuals(category: string, slug: string) {
 }
 
 const cardItemVariants: Variants = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 10 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] as const },
+    transition: { duration: 0.18, ease: 'easeOut' as const },
   },
 };
 
@@ -76,6 +76,7 @@ export const GameCard: React.FC<GameCardProps> = ({
   return (
     <Link
       href={`/games/${game.slug}`}
+      prefetch={true}
       onClick={() => playBlip()}
       className="block h-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded-2xl"
     >

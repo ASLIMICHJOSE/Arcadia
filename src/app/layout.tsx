@@ -4,6 +4,7 @@ import "./globals.css";
 import { PWAProvider } from "@/components/pwa/PWAProvider";
 import { ConnectionStatus } from "@/components/pwa/ConnectionStatus";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { AppShell } from "@/components/layout/AppShell";
 
 export const viewport: Viewport = {
   themeColor: "#0D0B09",
@@ -58,7 +59,9 @@ export default function RootLayout({
       <body className="min-h-screen bg-[var(--app-background)] text-[var(--text-primary)] font-sans antialiased flex flex-col selection:bg-[var(--accent-primary)]/30 selection:text-white">
         <PWAProvider>
           <ConnectionStatus />
-          {children}
+          <AppShell>
+            {children}
+          </AppShell>
           <InstallPrompt />
         </PWAProvider>
       </body>

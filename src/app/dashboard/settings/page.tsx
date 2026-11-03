@@ -7,29 +7,24 @@ import {
   User,
   Lock,
   Moon,
-  Bell,
-  Volume2,
-  VolumeX,
   KeyRound,
   Trash2,
   ShieldCheck,
-  AlertTriangle,
   CheckCircle2,
   HardDrive,
   RefreshCw,
-  Smartphone,
-  Sparkles,
 } from 'lucide-react';
 import { GlassPanel } from '@/components/ui';
 import { DEMO_PLAYER } from '@/lib/constants';
 import { getCurrentUser, UserSession } from '@/lib/auth';
 import { playBlip, playEngage } from '@/lib/sound';
+import { isHapticsEnabled, setHapticsEnabled, triggerHaptic } from '@/lib/haptics';
 
 export default function SettingsPage() {
   const [user, setUser] = useState<UserSession>({ username: 'CONTENDER', isLoggedIn: false });
   const [notifications, setNotifications] = useState(true);
   const [soundEffects, setSoundEffects] = useState(true);
-  const [haptics, setHaptics] = useState(true);
+  const [haptics, setHaptics] = useState(isHapticsEnabled());
 
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -37,6 +32,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setUser(getCurrentUser());
+    setHaptics(isHapticsEnabled());
   }, []);
 
   const triggerFeedback = (msg: string) => {
@@ -265,6 +261,30 @@ export default function SettingsPage() {
                     notifications ? 'bg-[#E34242] justify-end' : 'bg-white/10 justify-start'
                   }`}
                   aria-label="Toggle notifications"
+                >
+                  <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+                </button>
+              </div>
+
+              {/* Controller & Touch Haptics */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#1C0A0A] border border-white/10">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-bold text-white">Controller &amp; Touch Haptics</p>
+                  <p className="text-[10px] text-[#8C6D68]">Vibration feedback on moves and fanfares</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !haptics;
+                    setHaptics(next);
+                    setHapticsEnabled(next);
+                    if (next) triggerHaptic('medium');
+                    triggerFeedback(`Haptics ${next ? 'enabled' : 'disabled'}`);
+                  }}
+                  className={`w-11 h-6 rounded-full p-0.5 transition-colors cursor-pointer flex items-center ${
+                    haptics ? 'bg-[#E34242] justify-end' : 'bg-white/10 justify-start'
+                  }`}
+                  aria-label="Toggle haptics"
                 >
                   <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
                 </button>

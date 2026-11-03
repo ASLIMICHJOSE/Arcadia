@@ -14,11 +14,15 @@ import {
   LogOut,
   Sparkles,
   LogIn,
+  Maximize,
+  Minimize,
+  Gamepad2,
 } from 'lucide-react';
-import { DEMO_PLAYER } from '@/lib/constants';
 import { playBlip } from '@/lib/sound';
 import { cn } from '@/lib/utils';
 import { getCurrentUser, clearUserSession, getDynamicGreeting, UserSession } from '@/lib/auth';
+import { useGamepad } from '@/lib/gamepad';
+import { triggerHaptic } from '@/lib/haptics';
 
 export interface BreadcrumbItem {
   label: string;
@@ -43,6 +47,10 @@ export function DashboardHeader({
   const [searchFocused, setSearchFocused] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // HTML5 Gamepad connection state
+  const gamepad = useGamepad();
 
   // Dynamic user session and greeting state
   const [user, setUser] = useState<UserSession>({ username: 'CONTENDER', isLoggedIn: false });
@@ -56,15 +64,37 @@ export function DashboardHeader({
       setUser(getCurrentUser());
     };
 
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
     window.addEventListener('arcadia_auth_change', handleAuthChange);
     window.addEventListener('storage', handleAuthChange);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
     return () => {
       window.removeEventListener('arcadia_auth_change', handleAuthChange);
       window.removeEventListener('storage', handleAuthChange);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
   }, []);
 
+  const toggleFullscreen = async () => {
+    triggerHaptic('light');
+    playBlip();
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch {
+      // Fallback or ignore rejection
+    }
+  };
+
   const handleLogout = () => {
+    triggerHaptic('medium');
     clearUserSession();
     setProfileOpen(false);
     setUser({ username: 'CONTENDER', isLoggedIn: false });
@@ -83,7 +113,10 @@ export function DashboardHeader({
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={handleMobileSidebar}
+          onClick={() => {
+            triggerHaptic('light');
+            handleMobileSidebar?.();
+          }}
           aria-label="Open Navigation Menu"
           className="lg:hidden p-2 rounded-xl bg-[#291010] border border-white/10 text-[#C7A9A3] hover:text-[#FFF5F0]"
         >
@@ -121,12 +154,34 @@ export function DashboardHeader({
         </div>
       </div>
 
-      {/* Right: Cart, Notifications & Profile Avatar with Online Badge */}
-      <div className="flex items-center gap-3 sm:gap-4">
+      {/* Right: Controller Status, Fullscreen, Cart, Notifications & Profile */}
+      <div className="flex items-center gap-2 sm:gap-3.5">
+        {/* Hardware Controller Status Badge */}
+        {gamepad.isConnected && (
+          <div className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/50 border border-emerald-500/40 text-emerald-400 text-[10px] font-mono font-bold shadow-[0_0_12px_rgba(16,185,129,0.2)]">
+            <Gamepad2 className="w-3.5 h-3.5" />
+            <span>{gamepad.name}</span>
+          </div>
+        )}
+
+        {/* Console Fullscreen Toggle */}
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          title={isFullscreen ? 'Exit Fullscreen' : 'Enter Console Fullscreen'}
+          className="w-9 h-9 rounded-full bg-[#291010] border border-white/10 flex items-center justify-center text-[#C7A9A3] hover:text-white hover:border-[#E34242] transition-colors cursor-pointer"
+        >
+          {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+        </button>
+
         {/* Shopping Cart */}
         <Link
           href="/discover"
-          onClick={() => playBlip()}
+          prefetch={true}
+          onClick={() => {
+            triggerHaptic('light');
+            playBlip();
+          }}
           title="Game Store"
           className="w-9 h-9 rounded-full bg-[#291010] border border-white/10 flex items-center justify-center text-[#C7A9A3] hover:text-white hover:border-[#E34242] transition-colors"
         >
@@ -138,12 +193,13 @@ export function DashboardHeader({
           <button
             type="button"
             onClick={() => {
+              triggerHaptic('light');
               playBlip();
               setNotifOpen(!notifOpen);
               setProfileOpen(false);
             }}
             aria-label="View notifications"
-            className="w-9 h-9 rounded-full bg-[#291010] border border-white/10 flex items-center justify-center text-[#C7A9A3] hover:text-white hover:border-[#E34242] transition-colors relative"
+            className="w-9 h-9 rounded-full bg-[#291010] border border-white/10 flex items-center justify-center text-[#C7A9A3] hover:text-white hover:border-[#E34242] transition-colors relative cursor-pointer"
           >
             <Bell className="w-4 h-4" />
             <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-[#E34242] shadow-[0_0_8px_#E34242]" />
@@ -179,6 +235,7 @@ export function DashboardHeader({
               <button
                 type="button"
                 onClick={() => {
+                  triggerHaptic('light');
                   playBlip();
                   setProfileOpen(!profileOpen);
                   setNotifOpen(false);
@@ -209,6 +266,7 @@ export function DashboardHeader({
 
                     <Link
                       href="/dashboard/settings"
+                      prefetch={true}
                       onClick={() => setProfileOpen(false)}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-[#C7A9A3] hover:text-white hover:bg-[#351414] transition-colors"
                     >
@@ -231,7 +289,11 @@ export function DashboardHeader({
           ) : (
             <Link
               href="/login"
-              onClick={() => playBlip()}
+              prefetch={true}
+              onClick={() => {
+                triggerHaptic('light');
+                playBlip();
+              }}
               className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#E34242] to-[#C83A35] hover:from-[#EF5350] hover:to-[#D32F2F] text-white text-xs font-bold shadow-[0_2px_12px_rgba(227,66,66,0.35)] flex items-center gap-1.5 transition-all"
             >
               <LogIn size={13} />

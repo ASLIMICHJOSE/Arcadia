@@ -59,6 +59,7 @@ export function Sidebar({
       <div className="flex flex-col items-center">
         <Link
           href="/"
+          prefetch={true}
           onClick={() => playBlip()}
           aria-label="Arcadia Home"
           className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform hover:scale-105 active:scale-95 group mb-6"
@@ -91,6 +92,7 @@ export function Sidebar({
               <Link
                 key={item.label}
                 href={item.href}
+                prefetch={true}
                 onClick={() => playBlip()}
                 title={item.label}
                 className={cn(
@@ -116,6 +118,7 @@ export function Sidebar({
       <div className="flex flex-col items-center mt-auto pt-4">
         <Link
           href="/dashboard/multiplayer"
+          prefetch={true}
           onClick={() => playBlip()}
           title="New Match / Add Game"
           className="w-11 h-11 rounded-2xl border-2 border-dashed border-[#E34242]/50 text-[#E34242] hover:bg-[#E34242]/15 hover:border-[#E34242] flex items-center justify-center transition-all group active:scale-95 shadow-sm"

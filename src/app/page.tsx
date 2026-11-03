@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -22,8 +22,35 @@ import {
 
 import AppShell from '@/components/layout/AppShell';
 import { playBlip, playEngage } from '@/lib/sound';
+import { getTelemetry, formatPlaytime, addPlaytime, PlayerTelemetry, DEFAULT_TELEMETRY } from '@/lib/telemetry';
+import { triggerHaptic } from '@/lib/haptics';
 
 export default function HomePage() {
+  const [mounted, setMounted] = useState(false);
+  const [telemetry, setTelemetry] = useState<PlayerTelemetry>(DEFAULT_TELEMETRY);
+
+  useEffect(() => {
+    setMounted(true);
+    setTelemetry(getTelemetry());
+
+    const handleUpdate = () => {
+      setTelemetry(getTelemetry());
+    };
+
+    window.addEventListener('arcadia_telemetry_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    // Active playtime tracker (60s intervals to minimize CPU re-render overhead)
+    const interval = setInterval(() => {
+      addPlaytime(60);
+    }, 60000);
+
+    return () => {
+      window.removeEventListener('arcadia_telemetry_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+      clearInterval(interval);
+    };
+  }, []);
   return (
     <AppShell>
       <div className="space-y-6 pb-6 select-none">
@@ -47,6 +74,8 @@ export default function HomePage() {
               <img
                 src="/images/hero-character.jpg"
                 alt="Cyber Serpent Titan Warrior"
+                decoding="async"
+                fetchPriority="high"
                 className="w-full h-full object-contain object-bottom drop-shadow-[0_20px_35px_rgba(0,0,0,0.95)] filter contrast-[1.15] saturate-[1.25]"
               />
             </div>
@@ -123,6 +152,7 @@ export default function HomePage() {
                   {/* Instant Play Action Button */}
                   <Link
                     href="/games/snake"
+                    prefetch={true}
                     onClick={() => playEngage()}
                     className="px-6 py-2.5 rounded-full bg-white hover:bg-[#FFF5F0] text-black font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-[0_8px_24px_rgba(0,0,0,0.6)] active:scale-95 transition-all cursor-pointer"
                   >
@@ -139,6 +169,7 @@ export default function HomePage() {
             {/* Card 1: Tic-Tac-Toe Arena (Arcane Gambit) */}
             <Link
               href="/games/tic-tac-toe"
+              prefetch={true}
               onClick={() => playBlip()}
               className="flex-1 rounded-[22px] bg-[#291010] hover:bg-[#351414] border border-white/[0.08] hover:border-[#E34242]/50 p-3.5 sm:p-4 flex items-center justify-between transition-all duration-200 group shadow-lg"
             >
@@ -170,6 +201,7 @@ export default function HomePage() {
             {/* Card 2: Memory Match (Rune Archive) */}
             <Link
               href="/games/memory-match"
+              prefetch={true}
               onClick={() => playBlip()}
               className="flex-1 rounded-[22px] bg-[#291010] hover:bg-[#351414] border border-white/[0.08] hover:border-[#E34242]/50 p-3.5 sm:p-4 flex items-center justify-between transition-all duration-200 group shadow-lg"
             >
@@ -201,6 +233,7 @@ export default function HomePage() {
             {/* Card 3: Rock Paper Scissors (Elemental Duel) */}
             <Link
               href="/games/rock-paper-scissors"
+              prefetch={true}
               onClick={() => playBlip()}
               className="flex-1 rounded-[22px] bg-[#291010] hover:bg-[#351414] border border-white/[0.08] hover:border-[#E34242]/50 p-3.5 sm:p-4 flex items-center justify-between transition-all duration-200 group shadow-lg"
             >
@@ -244,6 +277,7 @@ export default function HomePage() {
               </h2>
               <Link
                 href="/discover"
+                prefetch={true}
                 onClick={() => playBlip()}
                 className="text-xs font-semibold text-[#E34242] hover:text-white transition-colors"
               >
@@ -266,6 +300,7 @@ export default function HomePage() {
                 <div className="relative z-10 flex items-center justify-between">
                   <Link
                     href="/games/tic-tac-toe"
+                    prefetch={true}
                     onClick={() => playEngage()}
                     className="w-8 h-8 rounded-full bg-[#E34242] flex items-center justify-center text-white shadow-lg cursor-pointer hover:scale-110 transition-transform"
                   >
@@ -298,6 +333,7 @@ export default function HomePage() {
                 <div className="relative z-10 flex items-center justify-between">
                   <Link
                     href="/games/snake"
+                    prefetch={true}
                     onClick={() => playEngage()}
                     className="w-8 h-8 rounded-full bg-[#E34242] flex items-center justify-center text-white shadow-lg cursor-pointer hover:scale-110 transition-transform"
                   >
@@ -381,6 +417,7 @@ export default function HomePage() {
               </h2>
               <Link
                 href="/dashboard"
+                prefetch={true}
                 onClick={() => playBlip()}
                 aria-label="View Full Statistics"
                 className="w-7 h-7 rounded-full bg-white/5 hover:bg-[#E34242] flex items-center justify-center text-[#C7A9A3] hover:text-white transition-colors"
@@ -422,8 +459,8 @@ export default function HomePage() {
                   <span className="text-[10px] font-medium text-[#C7A9A3] uppercase tracking-wider">
                     Total Playtime
                   </span>
-                  <span className="text-xl font-heading font-black text-white tracking-tight mt-0.5">
-                    128,45h
+                  <span className="text-xl font-heading font-black text-white tracking-tight mt-0.5" suppressHydrationWarning>
+                    {mounted ? formatPlaytime(telemetry.totalPlaytimeSeconds) : '128,45h'}
                   </span>
                 </div>
               </div>
@@ -436,7 +473,9 @@ export default function HomePage() {
                 <div className="w-9 h-9 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/30 text-[#E34242] flex items-center justify-center mb-1.5 shadow-[0_0_10px_rgba(227,66,66,0.3)]">
                   <Trophy className="w-4 h-4" />
                 </div>
-                <span className="font-heading font-black text-sm text-white">92%</span>
+                <span className="font-heading font-black text-sm text-white" suppressHydrationWarning>
+                  {mounted ? `${Math.min(99, Math.max(50, Math.round((telemetry.gamesPlayed / 150) * 100)))}%` : '92%'}
+                </span>
                 <span className="text-[9px] text-[#C7A9A3] uppercase tracking-wider leading-tight">
                   Story Progress
                 </span>
@@ -447,7 +486,9 @@ export default function HomePage() {
                 <div className="w-9 h-9 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/30 text-[#E34242] flex items-center justify-center mb-1.5 shadow-[0_0_10px_rgba(227,66,66,0.3)]">
                   <Zap className="w-4 h-4" />
                 </div>
-                <span className="font-heading font-black text-sm text-white">189</span>
+                <span className="font-heading font-black text-sm text-white" suppressHydrationWarning>
+                  {mounted ? telemetry.challengesSolved : 189}
+                </span>
                 <span className="text-[9px] text-[#C7A9A3] uppercase tracking-wider leading-tight">
                   Challenges
                 </span>
@@ -458,7 +499,9 @@ export default function HomePage() {
                 <div className="w-9 h-9 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/30 text-[#E34242] flex items-center justify-center mb-1.5 shadow-[0_0_10px_rgba(227,66,66,0.3)]">
                   <Swords className="w-4 h-4" />
                 </div>
-                <span className="font-heading font-black text-sm text-white">7,243</span>
+                <span className="font-heading font-black text-sm text-white" suppressHydrationWarning>
+                  {mounted ? telemetry.duelsWon.toLocaleString() : '7,243'}
+                </span>
                 <span className="text-[9px] text-[#C7A9A3] uppercase tracking-wider leading-tight">
                   Duels Won
                 </span>

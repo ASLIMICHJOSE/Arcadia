@@ -32,6 +32,10 @@ import GlassPanel from '@/components/ui/GlassPanel';
 import GameCard from '@/components/ui/GameCard';
 import { FEATURED_GAMES } from '@/lib/constants';
 import { formatNumber, getGameImage } from '@/lib/utils';
+import { playBlip, playEngage } from '@/lib/sound';
+import { triggerHaptic } from '@/lib/haptics';
+import { recordGameResult } from '@/lib/telemetry';
+import { useWakeLock } from '@/lib/wakelock';
 
 // =========================================================================
 // 1. GAME-SPECIFIC PLAYABLE ARENAS
@@ -78,8 +82,14 @@ function TicTacToeArena() {
           setIsXNext(true);
 
           const res = calculateWinner(newBoard);
-          if (res?.winner === 'O') setScores((s) => ({ ...s, o: s.o + 1 }));
-          else if (res?.winner === 'draw') setScores((s) => ({ ...s, draws: s.draws + 1 }));
+          if (res?.winner === 'O') {
+            triggerHaptic('error');
+            setScores((s) => ({ ...s, o: s.o + 1 }));
+            recordGameResult('tic-tac-toe', false, 20);
+          } else if (res?.winner === 'draw') {
+            setScores((s) => ({ ...s, draws: s.draws + 1 }));
+            recordGameResult('tic-tac-toe', false, 50);
+          }
         }, 400);
         return () => clearTimeout(timer);
       }
@@ -90,15 +100,28 @@ function TicTacToeArena() {
     if (board[idx] || result) return;
     if (vsAI && !isXNext) return;
 
+    triggerHaptic('medium');
+    playBlip();
+
     const newBoard = [...board];
     newBoard[idx] = isXNext ? 'X' : 'O';
     setBoard(newBoard);
     setIsXNext(!isXNext);
 
     const res = calculateWinner(newBoard);
-    if (res?.winner === 'X') setScores((s) => ({ ...s, x: s.x + 1 }));
-    else if (res?.winner === 'O') setScores((s) => ({ ...s, o: s.o + 1 }));
-    else if (res?.winner === 'draw') setScores((s) => ({ ...s, draws: s.draws + 1 }));
+    if (res?.winner === 'X') {
+      triggerHaptic('success');
+      playEngage();
+      setScores((s) => ({ ...s, x: s.x + 1 }));
+      recordGameResult('tic-tac-toe', true, 100);
+    } else if (res?.winner === 'O') {
+      triggerHaptic('error');
+      setScores((s) => ({ ...s, o: s.o + 1 }));
+      recordGameResult('tic-tac-toe', false, 20);
+    } else if (res?.winner === 'draw') {
+      setScores((s) => ({ ...s, draws: s.draws + 1 }));
+      recordGameResult('tic-tac-toe', false, 50);
+    }
   };
 
   const resetGame = () => {
@@ -230,7 +253,7 @@ function SnakeArena() {
     setIsPlaying(true);
   };
 
-  // Keyboard controls
+  // Keyboard & Gamepad controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isPlaying || gameOver) return;
@@ -245,7 +268,39 @@ function SnakeArena() {
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    let rafId: number;
+    const pollGamepad = () => {
+      if (isPlaying && !gameOver) {
+        const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+        const pad = pads[0];
+        if (pad) {
+          const axeX = pad.axes[0];
+          const axeY = pad.axes[1];
+          const dpadUp = pad.buttons[12]?.pressed;
+          const dpadDown = pad.buttons[13]?.pressed;
+          const dpadLeft = pad.buttons[14]?.pressed;
+          const dpadRight = pad.buttons[15]?.pressed;
+
+          if ((axeY < -0.45 || dpadUp) && dir.y === 0) {
+            setDir({ x: 0, y: -1 });
+          } else if ((axeY > 0.45 || dpadDown) && dir.y === 0) {
+            setDir({ x: 0, y: 1 });
+          } else if ((axeX < -0.45 || dpadLeft) && dir.x === 0) {
+            setDir({ x: -1, y: 0 });
+          } else if ((axeX > 0.45 || dpadRight) && dir.x === 0) {
+            setDir({ x: 1, y: 0 });
+          }
+        }
+      }
+      rafId = requestAnimationFrame(pollGamepad);
+    };
+    rafId = requestAnimationFrame(pollGamepad);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      cancelAnimationFrame(rafId);
+    };
   }, [isPlaying, gameOver, dir]);
 
   // Game loop
@@ -258,6 +313,8 @@ function SnakeArena() {
 
         // Wall collisions
         if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
+          triggerHaptic('error');
+          recordGameResult('snake', score > 50, score);
           setGameOver(true);
           setIsPlaying(false);
           return prevSnake;
@@ -265,6 +322,8 @@ function SnakeArena() {
 
         // Self collision
         if (prevSnake.some((seg) => seg.x === head.x && seg.y === head.y)) {
+          triggerHaptic('error');
+          recordGameResult('snake', score > 50, score);
           setGameOver(true);
           setIsPlaying(false);
           return prevSnake;
@@ -274,6 +333,8 @@ function SnakeArena() {
 
         // Eat food
         if (head.x === food.x && head.y === food.y) {
+          triggerHaptic('medium');
+          playBlip();
           setScore((s) => {
             const next = s + 10;
             if (next > highScore) setHighScore(next);
@@ -292,7 +353,7 @@ function SnakeArena() {
     }, 110);
 
     return () => clearInterval(interval);
-  }, [isPlaying, gameOver, dir, food, highScore]);
+  }, [isPlaying, gameOver, dir, food, highScore, score]);
 
   return (
     <div className="flex flex-col items-center max-w-md mx-auto p-6 rounded-2xl bg-[var(--surface-primary)] border border-[rgba(227,66,66,0.3)] shadow-[0_16px_40px_rgba(0,0,0,0.7)]">
@@ -436,6 +497,9 @@ function MemoryMatchArena() {
     const clicked = cards.find((c) => c.id === id);
     if (!clicked || clicked.flipped || clicked.matched) return;
 
+    triggerHaptic('light');
+    playBlip();
+
     const nextFlipped = [...flippedIds, id];
     setFlippedIds(nextFlipped);
 
@@ -450,7 +514,17 @@ function MemoryMatchArena() {
       const secondCard = cards.find((c) => c.id === secondId);
 
       if (firstCard && secondCard && firstCard.icon === secondCard.icon) {
-        setMatches((m) => m + 1);
+        setMatches((m) => {
+          const nextMatches = m + 1;
+          if (nextMatches === 8) {
+            triggerHaptic('success');
+            playEngage();
+            recordGameResult('memory-match', true, Math.max(100, 1000 - moves * 25));
+          } else {
+            triggerHaptic('medium');
+          }
+          return nextMatches;
+        });
         setCards((prev) =>
           prev.map((c) =>
             c.id === firstId || c.id === secondId ? { ...c, matched: true } : c
@@ -554,6 +628,8 @@ function RPSArena() {
   const [isFighting, setIsFighting] = useState(false);
 
   const playRound = (choiceId: string) => {
+    triggerHaptic('medium');
+    playBlip();
     setIsFighting(true);
     setPlayerChoice(choiceId);
     setAiChoice(null);
@@ -565,13 +641,29 @@ function RPSArena() {
 
       if (choiceId === randomAI) {
         setRoundResult('Tie Clash!');
+        triggerHaptic('light');
       } else {
         const choiceObj = CHOICES.find((c) => c.id === choiceId);
         if (choiceObj?.beats === randomAI) {
-          setPlayerScore((s) => s + 1);
+          triggerHaptic('success');
+          setPlayerScore((s) => {
+            const next = s + 1;
+            if (next >= 3) {
+              playEngage();
+              recordGameResult('rock-paper-scissors', true, 100);
+            }
+            return next;
+          });
           setRoundResult('Round Won!');
         } else {
-          setAiScore((s) => s + 1);
+          triggerHaptic('error');
+          setAiScore((s) => {
+            const next = s + 1;
+            if (next >= 3) {
+              recordGameResult('rock-paper-scissors', false, 25);
+            }
+            return next;
+          });
           setRoundResult('Round Lost!');
         }
       }
@@ -661,6 +753,9 @@ function GameDetailContent() {
   const rawSlug = routeParams?.slug;
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : (rawSlug as string) || '';
 
+  // Screen WakeLock active during gameplay
+  useWakeLock(true);
+
   const [activeTab, setActiveTab] = useState<'arena' | 'codex'>('arena');
   const [bookmarked, setBookmarked] = useState(false);
 
@@ -738,6 +833,7 @@ function GameDetailContent() {
           <div className="mb-4">
             <Link
               href="/discover"
+              prefetch={true}
               className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#C7A9A3] hover:text-white transition-colors group"
             >
               <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />

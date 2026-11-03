@@ -1,0 +1,133 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id                      String                   @id @default(uuid())
+  username                String                   @unique
+  email                   String                   @unique
+  passwordHash            String?
+  avatar                  String?
+  emailVerified           Boolean                  @default(false)
+  emailVerifiedAt         DateTime?
+  role                    Role                     @default(USER)
+  accounts                Account[]
+  sessions                Session[]
+  refreshTokens           RefreshToken[]
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  playerProfile           PlayerProfile?
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+
+  @@index([email])
+  @@index([username])
+}
+
+model Account {
+  id                String   @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refreshToken      String?  @db.Text
+  accessToken       String?  @db.Text
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?  @db.Text
+  sessionState      String?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  hashedToken String   @unique
+  userId      String
+  family      String
+  revoked     Boolean  @default(false)
+  expiresAt   DateTime
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([family])
+  @@index([expiresAt])
+}
+
+model EmailVerificationToken {
+  id          String   @id @default(uuid())
+  hashedToken String   @unique
+  email       String
+  userId      String?
+  expiresAt   DateTime
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id          String   @id @default(uuid())
+  hashedToken String   @unique
+  userId      String
+  expiresAt   DateTime
+  used        Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PlayerProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  rank            String   @default("ROOKIE")
+  level           Int      @default(1)
+  xp              Int      @default(0)
+  title           String   @default("Wanderer of Arcadia")
+  reputationScore Int      @default(100)
+  duelsWon        Int      @default(0)
+  matchesPlayed   Int      @default(0)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([rank])
+}
+
