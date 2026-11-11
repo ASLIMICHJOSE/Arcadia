@@ -133,8 +133,6 @@
 
 .glass-panel {
   background: var(--surface-primary);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--border-subtle);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--glass-shadow);
@@ -143,12 +141,10 @@
 
 .glass-panel-hover {
   background: var(--surface-primary);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--border-subtle);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--glass-shadow);
-  transition: all var(--transition-base);
+  transition: background-color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
   position: relative;
 }
 
@@ -161,12 +157,10 @@
 
 .glass-card {
   background: var(--surface-primary);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--border-subtle);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--glass-shadow);
-  transition: all var(--transition-base);
+  transition: background-color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
   position: relative;
 }
 

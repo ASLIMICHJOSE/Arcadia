@@ -107,7 +107,7 @@ export const GameGrid: React.FC<GameGridProps> = ({
             )}
           </div>
 
-          {/* Category Filter Chips */}
+          {/* Category Filter Chips with Spring Sliding Pill */}
           {showFilters && (
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none pt-2">
               <SlidersHorizontal className="w-4 h-4 text-[var(--accent-primary)] mr-1 shrink-0 hidden sm:block" />
@@ -116,13 +116,21 @@ export const GameGrid: React.FC<GameGridProps> = ({
                 return (
                   <button
                     key={category}
+                    type="button"
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 shrink-0 border cursor-pointer select-none ${
+                    className={`relative px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-colors duration-200 shrink-0 border cursor-pointer select-none z-10 ${
                       isActive
-                        ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white shadow-[0_0_14px_rgba(227,66,66,0.35)]'
+                        ? 'text-white border-transparent'
                         : 'bg-[var(--surface-secondary)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-white hover:border-[rgba(255,255,255,0.2)]'
                     }`}
                   >
+                    {isActive && (
+                      <motion.span
+                        layoutId="gamegrid-category-pill"
+                        transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                        className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-[#E34242] to-[#C83A35] shadow-[0_0_16px_rgba(227,66,66,0.45)]"
+                      />
+                    )}
                     {category}
                   </button>
                 );

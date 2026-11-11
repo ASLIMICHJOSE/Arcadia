@@ -5,6 +5,7 @@ import { PWAProvider } from "@/components/pwa/PWAProvider";
 import { ConnectionStatus } from "@/components/pwa/ConnectionStatus";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { AppShell } from "@/components/layout/AppShell";
+import { LenisProvider, ScrollHUD } from "@/components/motion";
 
 export const viewport: Viewport = {
   themeColor: "#0D0B09",
@@ -44,8 +45,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="dark"
-      data-scroll-behavior="smooth"
+      className="dark lenis"
       suppressHydrationWarning
     >
       <head>
@@ -58,11 +58,14 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-[var(--app-background)] text-[var(--text-primary)] font-sans antialiased flex flex-col selection:bg-[var(--accent-primary)]/30 selection:text-white">
         <PWAProvider>
-          <ConnectionStatus />
-          <AppShell>
-            {children}
-          </AppShell>
-          <InstallPrompt />
+          <LenisProvider>
+            <ScrollHUD />
+            <ConnectionStatus />
+            <AppShell>
+              {children}
+            </AppShell>
+            <InstallPrompt />
+          </LenisProvider>
         </PWAProvider>
       </body>
     </html>

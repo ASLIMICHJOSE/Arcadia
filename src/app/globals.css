@@ -31,15 +31,28 @@
 .font-sans { font-family: var(--font-inter), sans-serif; }
 .font-serif { font-family: var(--font-manrope), sans-serif; }
 
-/* Base Document Styles */
+/* Base Document Styles & Lenis Compatibility */
 html {
   background-color: var(--app-background);
   color: var(--text-primary);
   font-family: var(--font-inter), sans-serif;
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
 }
 
 body {
@@ -47,7 +60,7 @@ body {
   color: var(--text-primary);
   font-family: var(--font-inter), sans-serif;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
   position: relative;
 }
 

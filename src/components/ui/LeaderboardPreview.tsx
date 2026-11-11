@@ -94,12 +94,12 @@ export const LeaderboardPreview: React.FC<LeaderboardPreviewProps> = ({
   const displayedEntries = entries.slice(0, limit);
 
   return (
-    <GlassPanel padding="lg" showFlare className={`flex flex-col bg-[var(--surface-primary)] border-[rgba(240,163,82,0.2)] ${className}`}>
+    <GlassPanel padding="lg" showFlare className={`flex flex-col bg-[var(--surface-primary)] border-white/[0.08] ${className}`}>
       {/* Top Header */}
-      <div className="flex items-center justify-between pb-4 mb-3 border-b border-[rgba(240,163,82,0.15)]">
+      <div className="flex items-center justify-between pb-4 mb-3 border-b border-white/[0.08]">
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--accent-primary)] bg-[var(--surface-secondary)] border border-[rgba(240,163,82,0.3)] shadow-[0_0_12px_rgba(240,163,82,0.2)]"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-[#E34242] bg-[var(--surface-secondary)] border border-[#E34242]/35 shadow-[0_0_12px_rgba(227,66,66,0.25)]"
           >
             <Trophy className="w-5 h-5" />
           </div>
@@ -111,7 +111,8 @@ export const LeaderboardPreview: React.FC<LeaderboardPreviewProps> = ({
           </div>
         </div>
 
-        <span className="text-[11px] font-mono px-2.5 py-1 rounded-full text-[var(--accent-primary)] bg-[rgba(240,163,82,0.12)] border border-[rgba(240,163,82,0.3)] font-semibold">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1 rounded-full text-[#E34242] bg-[#E34242]/12 border border-[#E34242]/35 font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#E34242]" />
           Live Standings
         </span>
       </div>
@@ -120,7 +121,8 @@ export const LeaderboardPreview: React.FC<LeaderboardPreviewProps> = ({
       <motion.div
         variants={listVariants}
         initial="hidden"
-        animate="show"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.08 }}
         className="space-y-2 flex-1"
       >
         {displayedEntries.map((entry) => {
@@ -132,11 +134,11 @@ export const LeaderboardPreview: React.FC<LeaderboardPreviewProps> = ({
             <motion.div
               key={entry.name + entry.rank}
               variants={rowVariants}
-              whileHover={{ x: 2, transition: { duration: 0.15 } }}
+              whileHover={{ x: 4, transition: { type: 'spring', stiffness: 400, damping: 28 } }}
               className={`flex items-center justify-between p-2.5 md:p-3 rounded-xl transition-all ${
                 isTopThree
-                  ? 'bg-[var(--surface-secondary)]/80 border border-[rgba(240,163,82,0.2)] shadow-sm'
-                  : 'hover:bg-[var(--surface-secondary)]/50 border border-transparent'
+                  ? 'bg-[var(--surface-secondary)]/85 border border-[#E34242]/25 shadow-sm hover:border-[#E34242]/60'
+                  : 'hover:bg-[var(--surface-secondary)]/55 border border-transparent hover:border-white/[0.08]'
               }`}
             >
               {/* Left Side: Rank, Avatar, Name */}

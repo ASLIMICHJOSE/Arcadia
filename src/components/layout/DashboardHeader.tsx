@@ -9,10 +9,8 @@ import {
   Search,
   Bell,
   ShoppingCart,
-  User,
   Settings,
   LogOut,
-  Sparkles,
   LogIn,
   Maximize,
   Minimize,
@@ -105,7 +103,7 @@ export function DashboardHeader({
   return (
     <header
       className={cn(
-        'h-18 px-4 sm:px-6 lg:px-8 bg-[#1C0A0A]/95 backdrop-blur-xl border-b border-white/[0.06] flex items-center justify-between z-20 sticky top-0 select-none',
+        'h-18 px-4 sm:px-6 lg:px-8 bg-[#1C0A0A]/96 flex items-center justify-between z-20 sticky top-0 select-none border-b border-white/[0.07]',
         className
       )}
     >

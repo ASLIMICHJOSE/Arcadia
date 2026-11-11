@@ -1,6 +1,13 @@
 'use client';
 
-import React, { useState, useRef, MouseEvent, ReactNode } from 'react';
+import React, { useRef, MouseEvent, ReactNode } from 'react';
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useMotionTemplate,
+  useReducedMotion,
+} from 'framer-motion';
 
 export interface TiltCardProps {
   children: ReactNode;
@@ -8,13 +15,11 @@ export interface TiltCardProps {
   maxTilt?: number;
   showGlare?: boolean;
   showTopFlare?: boolean;
-  showHudCorners?: boolean;
   onClick?: () => void;
 }
 
 /**
- * 3D Interactive Tilt Card with Dynamic Specular Glare
- * Implements Section 6 of the Cinematic Engineering Specification (DESIGN.md).
+ * 3D Interactive Cyber Tilt Card with Spring Physics & Zero-Rerender Spotlight.
  */
 export function TiltCard({
   children,
@@ -22,47 +27,42 @@ export function TiltCard({
   maxTilt = 7,
   showGlare = true,
   showTopFlare = true,
-  showHudCorners = false,
   onClick,
 }: TiltCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [tilt, setTilt] = useState({
-    rotateX: 0,
-    rotateY: 0,
-    glareX: 50,
-    glareY: 50,
-    isHovered: false,
-  });
+  const shouldReduce = useReducedMotion();
+
+  const rawRotateX = useMotionValue(0);
+  const rawRotateY = useMotionValue(0);
+  const rawGlareX = useMotionValue(50);
+  const rawGlareY = useMotionValue(50);
+  const glareOpacity = useMotionValue(0);
+
+  const rotateX = useSpring(rawRotateX, { stiffness: 280, damping: 24, mass: 0.35 });
+  const rotateY = useSpring(rawRotateY, { stiffness: 280, damping: 24, mass: 0.35 });
+  const spotlightOpacity = useSpring(glareOpacity, { stiffness: 260, damping: 28 });
+
+  const glareBackground = useMotionTemplate`radial-gradient(280px circle at ${rawGlareX}% ${rawGlareY}%, rgba(227, 66, 66, 0.22) 0%, transparent 70%)`;
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (shouldReduce || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    const rotateX = ((y - centerY) / centerY) * -maxTilt;
-    const rotateY = ((x - centerX) / centerX) * maxTilt;
-    const glareX = (x / rect.width) * 100;
-    const glareY = (y / rect.height) * 100;
-
-    setTilt({
-      rotateX,
-      rotateY,
-      glareX,
-      glareY,
-      isHovered: true,
-    });
+    rawRotateX.set(((y - centerY) / centerY) * -maxTilt);
+    rawRotateY.set(((x - centerX) / centerX) * maxTilt);
+    rawGlareX.set((x / rect.width) * 100);
+    rawGlareY.set((y / rect.height) * 100);
+    glareOpacity.set(1);
   };
 
   const handleMouseLeave = () => {
-    setTilt((prev) => ({
-      ...prev,
-      rotateX: 0,
-      rotateY: 0,
-      isHovered: false,
-    }));
+    rawRotateX.set(0);
+    rawRotateY.set(0);
+    glareOpacity.set(0);
   };
 
   return (
@@ -71,49 +71,37 @@ export function TiltCard({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
-      style={{
-        perspective: '1200px',
-      }}
+      style={{ perspective: '1200px' }}
       className={`relative group ${onClick ? 'cursor-pointer' : ''}`}
     >
-      <div
+      <motion.div
         style={{
-          transform: tilt.isHovered
-            ? `rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg) scale3d(1.02, 1.02, 1.02)`
-            : 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
-          transition: tilt.isHovered
-            ? 'transform 0.08s ease-out'
-            : 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+          rotateX: shouldReduce ? 0 : rotateX,
+          rotateY: shouldReduce ? 0 : rotateY,
           transformStyle: 'preserve-3d',
+          willChange: 'transform',
         }}
-        className={`relative overflow-hidden rounded-2xl bg-[var(--surface-primary)] border border-[rgba(240,163,82,0.2)] hover:border-[var(--accent-primary)] shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(240,163,82,0.22)] transition-colors ${className}`}
+        whileHover={shouldReduce ? undefined : { scale: 1.018 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+        className={`relative overflow-hidden rounded-2xl bg-[var(--surface-primary)] border border-white/[0.08] hover:border-[rgba(227,66,66,0.55)] shadow-[0_16px_40px_rgba(0,0,0,0.6)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_28px_rgba(227,66,66,0.25)] transition-colors ${className}`}
       >
-        {/* Top Amber Flare Line (DESIGN.md) */}
-        {showTopFlare && <div className="top-amber-flare" />}
+        {/* Top Crimson Flare Line */}
+        {showTopFlare && <div className="top-flare" />}
 
-        {/* Tactical HUD Corner Brackets for Gaming Look */}
-        {showHudCorners && (
-          <>
-            <div className="hud-corner-tl" />
-            <div className="hud-corner-tr" />
-            <div className="hud-corner-bl" />
-            <div className="hud-corner-br" />
-          </>
-        )}
-
-        {/* Dynamic Specular Radial Amber Glare Spotlight */}
-        {showGlare && tilt.isHovered && (
-          <div
+        {/* Dynamic Specular Radial Crimson Glare Spotlight */}
+        {showGlare && !shouldReduce && (
+          <motion.div
             className="absolute inset-0 pointer-events-none rounded-2xl z-20"
             style={{
-              background: `radial-gradient(circle at ${tilt.glareX}% ${tilt.glareY}%, rgba(240, 163, 82, 0.18) 0%, transparent 60%)`,
+              background: glareBackground,
+              opacity: spotlightOpacity,
             }}
           />
         )}
 
         {/* Card Content */}
         <div className="relative z-10 w-full h-full">{children}</div>
-      </div>
+      </motion.div>
     </div>
   );
 }

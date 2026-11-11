@@ -61,22 +61,23 @@ export const StatCard: React.FC<StatCardProps> = ({
       hover
       showFlare
       padding="lg"
-      className={`flex flex-col justify-between overflow-hidden relative group bg-[var(--surface-primary)] border border-[rgba(240,163,82,0.2)] hover:border-[var(--accent-primary)] ${className}`}
+      className={`flex flex-col justify-between overflow-hidden relative group bg-[var(--surface-primary)] border border-white/[0.08] hover:border-[rgba(227,66,66,0.55)] ${className}`}
       initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay, ease: [0.4, 0, 0.2, 1] }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.38, delay, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Background warm amber highlight on hover */}
+      {/* Background crimson highlight on hover */}
       <div
         className="pointer-events-none absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl"
         style={{
-          background: 'radial-gradient(circle, rgba(240, 163, 82, 0.25) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(227, 66, 66, 0.28) 0%, transparent 70%)',
         }}
       />
 
       {/* Top Header: Icon & Trend Badge */}
       <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[var(--accent-primary)]/15 border border-[var(--accent-primary)]/30 text-[var(--accent-primary)] transition-transform duration-300 group-hover:scale-105 shadow-[0_0_12px_rgba(240,163,82,0.25)]">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#E34242]/15 border border-[#E34242]/35 text-[#E34242] transition-transform duration-300 group-hover:scale-108 shadow-[0_0_14px_rgba(227,66,66,0.28)]">
           <Icon className="w-6 h-6 shrink-0" strokeWidth={2} />
         </div>
 

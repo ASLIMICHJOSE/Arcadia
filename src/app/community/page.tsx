@@ -18,6 +18,10 @@ import {
 } from 'lucide-react';
 
 import AppShell from '@/components/layout/AppShell';
+import {
+  CyberReveal,
+  CyberCounter,
+} from '@/components/motion';
 import { playBlip, playEngage } from '@/lib/sound';
 
 const UPCOMING_COMMUNITY_FEATURES = [
@@ -119,7 +123,9 @@ export default function CommunityPage() {
             <div className="px-4 py-2.5 rounded-2xl bg-[#1C0A0A] border border-white/10 flex items-center gap-2 text-xs text-[#C7A9A3]">
               <Flame size={15} className="text-[#E34242]" />
               <span>Online Contenders:</span>
-              <span className="font-mono font-bold text-white">4,812</span>
+              <span className="font-mono font-bold text-white">
+                <CyberCounter value={4812} />
+              </span>
             </div>
           </div>
         </div>
@@ -144,14 +150,16 @@ export default function CommunityPage() {
                 return (
                   <motion.div
                     key={item.title}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: index * 0.08 }}
-                    className="rounded-[24px] bg-[#291010] border border-white/[0.08] hover:border-[#E34242]/40 p-5 flex flex-col justify-between transition-all duration-200 hover:shadow-[0_8px_24px_rgba(227,66,66,0.15)] group"
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.08 }}
+                    transition={{ duration: 0.28, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                    whileHover={{ y: -4 }}
+                    className="rounded-[24px] bg-[#291010] border border-white/[0.08] hover:border-[#E34242]/50 p-5 flex flex-col justify-between transition-colors duration-200 hover:shadow-[0_12px_28px_rgba(227,66,66,0.2)] group relative overflow-hidden"
                   >
                     <div>
                       <div className="flex items-center justify-between mb-3.5">
-                        <div className="w-10 h-10 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/30 text-[#E34242] flex items-center justify-center transition-transform group-hover:scale-105">
+                        <div className="w-10 h-10 rounded-2xl bg-[#E34242]/15 border border-[#E34242]/30 text-[#E34242] flex items-center justify-center transition-transform group-hover:scale-108">
                           <Icon className="w-5 h-5" />
                         </div>
                         <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[#1C0A0A] border border-white/10 text-[#E34242] font-semibold">
@@ -159,7 +167,7 @@ export default function CommunityPage() {
                         </span>
                       </div>
 
-                      <h3 className="text-base font-heading font-bold text-white mb-1.5 group-hover:text-[#E34242] transition-colors">
+                      <h3 className="text-base font-heading font-bold text-white mb-1.5 group-hover:text-[#FF7878] transition-colors">
                         {item.title}
                       </h3>
 
@@ -178,7 +186,7 @@ export default function CommunityPage() {
             </div>
 
             {/* Recent Live Discussions List */}
-            <div className="rounded-[24px] bg-[#291010] border border-white/[0.08] p-5 space-y-4">
+            <CyberReveal className="rounded-[24px] bg-[#291010] border border-white/[0.08] p-5 space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
                 <div className="flex items-center gap-2">
                   <MessageCircle size={15} className="text-[#E34242]" />
@@ -186,22 +194,26 @@ export default function CommunityPage() {
                     Recent Arena Dispatches
                   </h3>
                 </div>
-                <span className="text-[11px] font-mono text-[#8C6D68]">Live Feed</span>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-[#E34242]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E34242]" />
+                  Live Feed
+                </span>
               </div>
 
               <div className="space-y-2.5">
                 {RECENT_DISCUSSIONS.map((disc) => (
-                  <div
+                  <motion.div
                     key={disc.id}
+                    whileHover={{ x: 4, transition: { type: 'spring', stiffness: 400, damping: 28 } }}
                     onClick={() => playBlip()}
-                    className="p-3.5 rounded-2xl bg-[#1C0A0A]/70 hover:bg-[#351414] border border-white/[0.04] hover:border-[#E34242]/30 transition-all flex items-center justify-between gap-3 cursor-pointer group"
+                    className="p-3.5 rounded-2xl bg-[#1C0A0A]/70 hover:bg-[#351414] border border-white/[0.04] hover:border-[#E34242]/35 transition-colors flex items-center justify-between gap-3 cursor-pointer group"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-md bg-[#E34242]/20 text-[#E34242] font-bold">
                           {disc.tag}
                         </span>
-                        <span className="text-xs font-semibold text-white group-hover:text-[#E34242] transition-colors">
+                        <span className="text-xs font-semibold text-white group-hover:text-[#FF7878] transition-colors">
                           {disc.title}
                         </span>
                       </div>
@@ -216,10 +228,10 @@ export default function CommunityPage() {
                       <MessageSquare size={13} className="text-[#E34242]" />
                       <span>{disc.replies}</span>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </CyberReveal>
           </div>
 
           {/* Right: Guild Dispatch Newsletter & Clan Founder Callout (4 cols) */}

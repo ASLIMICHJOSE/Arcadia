@@ -20,6 +20,7 @@ import {
   ActivityFeed,
   LeaderboardPreview,
 } from '@/components/ui';
+import { CyberReveal } from '@/components/motion';
 import {
   FEATURED_GAMES,
   DEMO_PLAYER,
@@ -98,7 +99,7 @@ export default function DashboardOverviewPage() {
           icon={Gamepad2}
           trend="+14% this week"
           helperText="Across all active arenas"
-          delay={0.05}
+          delay={0.04}
         />
         <StatCard
           label="Wins"
@@ -106,7 +107,7 @@ export default function DashboardOverviewPage() {
           icon={Trophy}
           trend={{ value: '74% Win Rate', isUp: true }}
           helperText="Competitive triumph tally"
-          delay={0.1}
+          delay={0.08}
         />
         <StatCard
           label="Total Score"
@@ -114,7 +115,7 @@ export default function DashboardOverviewPage() {
           icon={Star}
           trend="+2,450 pts"
           helperText="Frontier prestige score"
-          delay={0.15}
+          delay={0.12}
         />
         <StatCard
           label="Playtime"
@@ -122,15 +123,12 @@ export default function DashboardOverviewPage() {
           icon={Clock}
           trend="+6h this week"
           helperText="Total arena immersion"
-          delay={0.2}
+          delay={0.16}
         />
       </motion.div>
 
       {/* 2-Column Section: Recently Played & Player Profile */}
-      <motion.div
-        variants={itemVariants}
-        className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"
-      >
+      <CyberReveal className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Recently Played (7 cols) */}
         <div className="lg:col-span-7 flex flex-col space-y-4">
           <GlassPanel padding="lg" className="flex flex-col h-full bg-[var(--surface-primary)] border-[var(--border-subtle)]">
@@ -172,26 +170,26 @@ export default function DashboardOverviewPage() {
             stats={DEMO_STATS}
           />
         </div>
-      </motion.div>
+      </CyberReveal>
 
       {/* Activity Feed Section */}
-      <motion.div variants={itemVariants}>
+      <CyberReveal>
         <ActivityFeed
           activities={DEMO_ACTIVITY}
           limit={6}
           title="Recent Activity"
         />
-      </motion.div>
+      </CyberReveal>
 
       {/* Leaderboard Section */}
-      <motion.div variants={itemVariants}>
+      <CyberReveal delay={0.05}>
         <LeaderboardPreview
           entries={DEMO_LEADERBOARD}
           limit={5}
           title="Arena Standings"
           viewAllHref="/dashboard/leaderboard"
         />
-      </motion.div>
+      </CyberReveal>
     </motion.div>
   );
 }

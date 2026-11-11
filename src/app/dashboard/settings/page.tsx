@@ -14,10 +14,10 @@ import {
   HardDrive,
   RefreshCw,
 } from 'lucide-react';
-import { GlassPanel } from '@/components/ui';
+import { CyberReveal } from '@/components/motion';
 import { DEMO_PLAYER } from '@/lib/constants';
 import { getCurrentUser, UserSession } from '@/lib/auth';
-import { playBlip, playEngage } from '@/lib/sound';
+import { playBlip } from '@/lib/sound';
 import { isHapticsEnabled, setHapticsEnabled, triggerHaptic } from '@/lib/haptics';
 
 export default function SettingsPage() {
@@ -28,7 +28,6 @@ export default function SettingsPage() {
 
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [cacheCleared, setCacheCleared] = useState(false);
 
   useEffect(() => {
     setUser(getCurrentUser());
@@ -44,15 +43,14 @@ export default function SettingsPage() {
   };
 
   const handleClearCache = () => {
-    setCacheCleared(true);
     triggerFeedback('Offline cache refreshed & synchronized (3.2 MB re-verified).');
   };
 
   return (
     <div className="w-full space-y-6 pb-12 select-none">
       {/* Header Banner - Full Width */}
-      <div className="rounded-[28px] overflow-hidden bg-gradient-to-r from-[#291010] via-[#351414] to-[#220C0C] border border-white/[0.08] p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl">
-        <div className="max-w-2xl space-y-2">
+      <div className="rounded-[28px] overflow-hidden bg-gradient-to-r from-[#291010] via-[#351414] to-[#220C0C] border border-white/[0.08] p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl relative">
+        <div className="max-w-2xl space-y-2 relative z-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#E34242]/20 border border-[#E34242]/40 text-[#E34242] text-xs font-mono font-bold uppercase tracking-wider">
             <SettingsIcon className="w-3.5 h-3.5" />
             <span>STATION CONFIGURATION</span>
@@ -65,7 +63,7 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative z-10">
           <div className="px-4 py-2.5 rounded-2xl bg-[#1C0A0A] border border-white/10 flex items-center gap-2.5 text-xs text-[#C7A9A3]">
             <ShieldCheck size={16} className="text-emerald-400" />
             <span>Client Version:</span>
@@ -90,7 +88,7 @@ export default function SettingsPage() {
       </AnimatePresence>
 
       {/* 2-Column Responsive Layout Filling Full Width */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+      <CyberReveal className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
         {/* Left Column (7 cols): Profile & Storage */}
         <div className="lg:col-span-7 space-y-6">
           {/* Profile Card */}
@@ -237,11 +235,11 @@ export default function SettingsPage() {
                     triggerFeedback(`Sound effects ${!soundEffects ? 'unmuted' : 'muted'}`);
                   }}
                   className={`w-11 h-6 rounded-full p-0.5 transition-colors cursor-pointer flex items-center ${
-                    soundEffects ? 'bg-[#E34242] justify-end' : 'bg-white/10 justify-start'
+                    soundEffects ? 'bg-[#E34242] justify-end shadow-[0_0_10px_rgba(227,66,66,0.5)]' : 'bg-white/10 justify-start'
                   }`}
                   aria-label="Toggle sound effects"
                 >
-                  <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+                  <motion.div layout transition={{ type: 'spring', stiffness: 520, damping: 32 }} className="w-5 h-5 rounded-full bg-white shadow-sm" />
                 </button>
               </div>
 
@@ -258,11 +256,11 @@ export default function SettingsPage() {
                     triggerFeedback(`Notifications ${!notifications ? 'enabled' : 'disabled'}`);
                   }}
                   className={`w-11 h-6 rounded-full p-0.5 transition-colors cursor-pointer flex items-center ${
-                    notifications ? 'bg-[#E34242] justify-end' : 'bg-white/10 justify-start'
+                    notifications ? 'bg-[#E34242] justify-end shadow-[0_0_10px_rgba(227,66,66,0.5)]' : 'bg-white/10 justify-start'
                   }`}
                   aria-label="Toggle notifications"
                 >
-                  <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+                  <motion.div layout transition={{ type: 'spring', stiffness: 520, damping: 32 }} className="w-5 h-5 rounded-full bg-white shadow-sm" />
                 </button>
               </div>
 
@@ -282,11 +280,11 @@ export default function SettingsPage() {
                     triggerFeedback(`Haptics ${next ? 'enabled' : 'disabled'}`);
                   }}
                   className={`w-11 h-6 rounded-full p-0.5 transition-colors cursor-pointer flex items-center ${
-                    haptics ? 'bg-[#E34242] justify-end' : 'bg-white/10 justify-start'
+                    haptics ? 'bg-[#E34242] justify-end shadow-[0_0_10px_rgba(227,66,66,0.5)]' : 'bg-white/10 justify-start'
                   }`}
                   aria-label="Toggle haptics"
                 >
-                  <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+                  <motion.div layout transition={{ type: 'spring', stiffness: 520, damping: 32 }} className="w-5 h-5 rounded-full bg-white shadow-sm" />
                 </button>
               </div>
             </div>
@@ -359,7 +357,7 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
-      </div>
+      </CyberReveal>
     </div>
   );
 }

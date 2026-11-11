@@ -15,6 +15,7 @@ import {
   LucideIcon,
 } from 'lucide-react';
 import { GlassPanel } from '@/components/ui';
+import { CyberCounter } from '@/components/motion';
 import { DEMO_ACHIEVEMENTS, Achievement } from '@/lib/constants';
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -61,7 +62,7 @@ export default function AchievementsPage() {
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--accent-primary)] mb-1">
             <Award size={14} />
-            <span>Honors & Distinctions</span>
+            <span>Honors &amp; Distinctions</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight">
             Achievements
@@ -87,7 +88,7 @@ export default function AchievementsPage() {
               Reward XP
             </span>
             <span className="text-sm font-bold font-mono text-[var(--accent-primary)]">
-              +{totalXpEarned.toLocaleString()} XP
+              +<CyberCounter value={totalXpEarned} /> XP
             </span>
           </div>
         </div>

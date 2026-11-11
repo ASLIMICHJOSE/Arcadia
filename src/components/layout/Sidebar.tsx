@@ -13,7 +13,6 @@ import {
   ShoppingBag,
   MessageSquare,
   Plus,
-  Compass,
   X,
 } from 'lucide-react';
 import { playBlip } from '@/lib/sound';
@@ -62,11 +61,11 @@ export function Sidebar({
           prefetch={true}
           onClick={() => playBlip()}
           aria-label="Arcadia Home"
-          className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform hover:scale-105 active:scale-95 group mb-6"
+          className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform hover:scale-108 active:scale-95 group mb-6 relative"
         >
-          {/* Custom Stylized Gaming Logo (Matching the top emblem in screenshot) */}
-          <div className="relative flex items-center justify-center w-10 h-10">
-            <svg viewBox="0 0 32 32" fill="none" className="w-8 h-8 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
+          {/* Custom Stylized Gaming Logo */}
+          <div className="relative flex items-center justify-center w-10 h-10 transition-transform duration-200 group-hover:scale-105">
+            <svg viewBox="0 0 32 32" fill="none" className="w-8 h-8 text-white">
               <path
                 d="M16 3L20 12L29 16L20 20L16 29L12 20L3 16L12 12L16 3Z"
                 fill="#FFF5F0"
@@ -96,16 +95,23 @@ export function Sidebar({
                 onClick={() => playBlip()}
                 title={item.label}
                 className={cn(
-                  'w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200 relative group',
+                  'w-11 h-11 rounded-2xl flex items-center justify-center transition-colors duration-200 relative group z-10',
                   isActive
-                    ? 'bg-[#E34242] text-white shadow-[0_0_20px_rgba(227,66,66,0.65)] scale-105'
-                    : 'text-[#C7A9A3] hover:text-white hover:bg-white/[0.08]'
+                    ? 'text-white'
+                    : 'text-[#C7A9A3] hover:text-white hover:bg-white/[0.06]'
                 )}
               >
-                <Icon className="w-5 h-5 transition-transform group-hover:scale-110" />
+                {isActive && (
+                  <motion.span
+                    layoutId="sidebar-active-beacon"
+                    transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                    className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-[#E34242] to-[#C83A35] shadow-[0_0_22px_rgba(227,66,66,0.65),inset_0_1px_1px_rgba(255,255,255,0.3)]"
+                  />
+                )}
+                <Icon className={cn('w-5 h-5 transition-transform duration-200', isActive ? 'scale-105' : 'group-hover:scale-110')} />
 
-                {/* Tooltip on hover */}
-                <span className="absolute left-16 px-2.5 py-1 rounded-lg bg-[#291010] text-xs font-semibold text-white border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl z-50">
+                {/* Futuristic HUD Slide-out Tooltip */}
+                <span className="absolute left-15 px-2.5 py-1 rounded-lg bg-[#291010]/95 backdrop-blur-md text-[11px] font-mono font-semibold text-white border border-[#E34242]/35 opacity-0 -translate-x-1.5 group-hover:opacity-100 group-hover:translate-x-0 pointer-events-none transition-all duration-150 whitespace-nowrap shadow-xl z-50">
                   {item.label}
                 </span>
               </Link>

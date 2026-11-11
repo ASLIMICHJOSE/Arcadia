@@ -59,21 +59,13 @@ export default function MultiplayerPage() {
           }}
         />
 
-        {/* Animated Central Icon */}
+        {/* Clean Central Icon */}
         <div className="relative mb-8">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-            className="w-24 h-24 rounded-full border border-dashed border-[rgba(227,66,66,0.4)] absolute -inset-2 pointer-events-none"
-          />
+          <div className="w-24 h-24 rounded-full border border-dashed border-[rgba(227,66,66,0.4)] absolute -inset-2 pointer-events-none" />
 
-          <motion.div
-            animate={{ scale: [1, 1.06, 1] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#421919] via-[#351313] to-[#260D0D] border-2 border-[var(--accent-primary)] flex items-center justify-center text-white shadow-[0_0_24px_rgba(227,66,66,0.3)]"
-          >
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#421919] via-[#351313] to-[#260D0D] border-2 border-[var(--accent-primary)] flex items-center justify-center text-white shadow-[0_0_24px_rgba(227,66,66,0.3)]">
             <Swords size={38} className="text-[var(--accent-primary)]" />
-          </motion.div>
+          </div>
         </div>
 
         {/* Badge */}

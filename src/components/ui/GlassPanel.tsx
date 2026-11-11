@@ -46,13 +46,13 @@ export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(
     }, [as]);
 
     const baseStyles =
-      'relative backdrop-blur-[16px] -webkit-backdrop-blur-[16px] ' +
-      'bg-[var(--surface-primary)] border border-[rgba(240,163,82,0.18)] ' +
+      'relative ' +
+      'bg-[var(--surface-primary)] border border-white/[0.08] ' +
       'rounded-[var(--border-radius-lg,16px)] shadow-[var(--glass-shadow)] ' +
-      'transition-[background-color,border-color,box-shadow,transform] duration-300 ease-out';
+      'transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out';
 
     const hoverStyles = hover
-      ? 'hover:bg-[var(--surface-secondary)] hover:border-[var(--accent-primary)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.7),0_0_24px_rgba(240,163,82,0.22)] cursor-pointer'
+      ? 'hover:bg-[var(--surface-secondary)] hover:border-[rgba(227,66,66,0.55)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.7),0_0_24px_rgba(227,66,66,0.22)] cursor-pointer'
       : '';
 
     const selectedPadding = paddingStyles[padding] || paddingStyles.md;

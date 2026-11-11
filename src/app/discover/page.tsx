@@ -15,6 +15,7 @@ import {
 import AppShell from '@/components/layout/AppShell';
 import GameGrid from '@/components/ui/GameGrid';
 import GlassPanel from '@/components/ui/GlassPanel';
+import { CyberReveal } from '@/components/motion';
 import { FEATURED_GAMES } from '@/lib/constants';
 import { playBlip, playEngage } from '@/lib/sound';
 
@@ -84,10 +85,10 @@ export default function DiscoverPage() {
             <Link
               href="/community"
               onClick={() => playBlip()}
-              className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white font-semibold text-xs flex items-center gap-2 transition-all"
+              className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-[#E34242]/20 border border-white/15 hover:border-[#E34242]/50 text-white font-semibold text-xs flex items-center gap-2 transition-all group/btn"
             >
               <span>Suggest Title</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
             </Link>
           </div>
         </div>
@@ -104,7 +105,7 @@ export default function DiscoverPage() {
         </section>
 
         {/* Upcoming Titles Pipeline */}
-        <section className="pt-6 border-t border-white/[0.08]">
+        <CyberReveal className="pt-6 border-t border-white/[0.08]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <div className="inline-flex items-center gap-2 mb-1">
@@ -124,10 +125,14 @@ export default function DiscoverPage() {
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: index * 0.1 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.35, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ y: -4 }}
               >
                 <GlassPanel
+                  hover
+                  showFlare
                   padding="md"
                   className="h-full flex flex-col justify-between bg-[#291010]/90 border-white/[0.08] hover:border-[#E34242]/50 transition-colors"
                 >
@@ -200,7 +205,7 @@ export default function DiscoverPage() {
               </form>
             )}
           </div>
-        </section>
+        </CyberReveal>
       </div>
     </AppShell>
   );

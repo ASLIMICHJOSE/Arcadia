@@ -30,6 +30,7 @@ import {
 import AppShell from '@/components/layout/AppShell';
 import GlassPanel from '@/components/ui/GlassPanel';
 import GameCard from '@/components/ui/GameCard';
+import { CyberReveal } from '@/components/motion';
 import { FEATURED_GAMES } from '@/lib/constants';
 import { formatNumber, getGameImage } from '@/lib/utils';
 import { playBlip, playEngage } from '@/lib/sound';
@@ -830,7 +831,7 @@ function GameDetailContent() {
         {/* GAME HERO CONSOLE CARD                                                    */}
         {/* ========================================================================= */}
         <div className="rounded-[28px] overflow-hidden bg-gradient-to-r from-[#291010] via-[#351414] to-[#220C0C] border border-white/[0.08] p-6 sm:p-8 relative shadow-xl">
-          <div className="mb-4">
+          <div className="mb-4 relative z-10">
             <Link
               href="/discover"
               prefetch={true}
@@ -841,7 +842,7 @@ function GameDetailContent() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center relative z-10">
             {/* Left Column: Game Meta & Titles */}
             <div className="lg:col-span-7 space-y-3.5">
               <div className="flex flex-wrap items-center gap-2">
@@ -865,28 +866,50 @@ function GameDetailContent() {
                 {game.description}
               </p>
 
-              {/* Primary Action Buttons */}
+              {/* Primary Action Buttons with Spring Tab Indicator */}
               <div className="pt-2 flex flex-wrap items-center gap-3">
                 <button
-                  onClick={() => setActiveTab('arena')}
-                  className={`px-6 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                  type="button"
+                  onClick={() => {
+                    playBlip();
+                    setActiveTab('arena');
+                  }}
+                  className={`relative z-10 px-6 py-3 rounded-2xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer border ${
                     activeTab === 'arena'
-                      ? 'bg-gradient-to-r from-[#E34242] to-[#C83A35] text-white shadow-[0_4px_20px_rgba(227,66,66,0.4)]'
-                      : 'bg-[#1C0A0A] text-white border border-white/10 hover:border-white/20'
+                      ? 'text-white border-transparent'
+                      : 'bg-[#1C0A0A] text-white border-white/10 hover:border-white/20'
                   }`}
                 >
+                  {activeTab === 'arena' && (
+                    <motion.span
+                      layoutId="game-detail-mode-pill"
+                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                      className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-r from-[#E34242] to-[#C83A35] shadow-[0_4px_20px_rgba(227,66,66,0.45)]"
+                    />
+                  )}
                   <Play className="w-4 h-4 fill-current" />
                   <span>Play In Arena</span>
                 </button>
 
                 <button
-                  onClick={() => setActiveTab('codex')}
-                  className={`px-5 py-3 rounded-2xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+                  type="button"
+                  onClick={() => {
+                    playBlip();
+                    setActiveTab('codex');
+                  }}
+                  className={`relative z-10 px-5 py-3 rounded-2xl text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer border ${
                     activeTab === 'codex'
-                      ? 'bg-[#291010] border border-[#E34242] text-white shadow-[0_0_12px_rgba(227,66,66,0.25)]'
-                      : 'bg-[#1C0A0A] text-[#C7A9A3] border border-white/10 hover:text-white'
+                      ? 'text-white border-[#E34242]/60'
+                      : 'bg-[#1C0A0A] text-[#C7A9A3] border-white/10 hover:text-white'
                   }`}
                 >
+                  {activeTab === 'codex' && (
+                    <motion.span
+                      layoutId="game-detail-mode-pill"
+                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                      className="absolute inset-0 -z-10 rounded-2xl bg-[#351414] shadow-[0_0_16px_rgba(227,66,66,0.3)]"
+                    />
+                  )}
                   <BookOpen className="w-4 h-4" />
                   <span>Codex &amp; Rules</span>
                 </button>
@@ -1034,7 +1057,7 @@ function GameDetailContent() {
         {/* ========================================================================= */}
         {/* RELATED GAMES SECTION                                                    */}
         {/* ========================================================================= */}
-        <div className="space-y-4 pt-2">
+        <CyberReveal className="space-y-4 pt-2">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-heading font-extrabold text-white">
@@ -1058,7 +1081,7 @@ function GameDetailContent() {
               <GameCard key={relGame.id} game={relGame} />
             ))}
           </div>
-        </div>
+        </CyberReveal>
       </div>
     </AppShell>
   );

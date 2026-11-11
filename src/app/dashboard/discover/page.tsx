@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Compass, Sparkles, Hourglass } from 'lucide-react';
 import { GameGrid, GlassPanel } from '@/components/ui';
+import { CyberReveal } from '@/components/motion';
 import { FEATURED_GAMES } from '@/lib/constants';
 
 export default function DiscoverPage() {
@@ -31,26 +31,14 @@ export default function DiscoverPage() {
       />
 
       {/* "More games coming soon" Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.45 }}
-      >
+      <CyberReveal delay={0.1}>
         <GlassPanel
           padding="lg"
           className="relative overflow-hidden bg-[var(--surface-primary)] border border-[rgba(227,66,66,0.3)] shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6"
         >
-          {/* Subtle Ambient Glow */}
-          <div
-            className="pointer-events-none absolute -right-10 -bottom-10 w-60 h-60 rounded-full opacity-25 blur-3xl"
-            style={{
-              background: 'radial-gradient(circle, #E34242 0%, transparent 70%)',
-            }}
-          />
-
           <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-2xl bg-[rgba(227,66,66,0.15)] border border-[rgba(227,66,66,0.35)] flex items-center justify-center text-[var(--accent-primary)] flex-shrink-0 shadow-[0_0_16px_rgba(227,66,66,0.25)]">
-              <Hourglass size={26} className="animate-pulse" />
+            <div className="w-14 h-14 rounded-2xl bg-[rgba(227,66,66,0.15)] border border-[rgba(227,66,66,0.35)] flex items-center justify-center text-[var(--accent-primary)] flex-shrink-0">
+              <Hourglass size={26} />
             </div>
 
             <div>
@@ -73,7 +61,7 @@ export default function DiscoverPage() {
             </span>
           </div>
         </GlassPanel>
-      </motion.div>
+      </CyberReveal>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   Medal,
 } from 'lucide-react';
 import { GlassPanel, LeaderboardPreview } from '@/components/ui';
+import { CyberReveal } from '@/components/motion';
 import { DEMO_LEADERBOARD } from '@/lib/constants';
 
 type TimeFilter = 'All Time' | 'This Month' | 'This Week';
@@ -148,12 +149,14 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Full Leaderboard Component with limit 10 */}
-      <LeaderboardPreview
-        entries={DEMO_LEADERBOARD}
-        limit={10}
-        title={`All Contenders (${activeTab})`}
-        viewAllHref="/dashboard/leaderboard"
-      />
+      <CyberReveal delay={0.05}>
+        <LeaderboardPreview
+          entries={DEMO_LEADERBOARD}
+          limit={10}
+          title={`All Contenders (${activeTab})`}
+          viewAllHref="/dashboard/leaderboard"
+        />
+      </CyberReveal>
     </div>
   );
 }

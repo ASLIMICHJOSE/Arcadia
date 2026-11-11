@@ -94,8 +94,8 @@ function getActivityTypeStyles(type: ActivityType) {
     case 'game_played':
     default:
       return {
-        badgeColor: 'text-[var(--accent-primary)] bg-[rgba(240,163,82,0.15)] border-[rgba(240,163,82,0.3)]',
-        accentGlow: '0 0 12px rgba(240,163,82,0.25)',
+        badgeColor: 'text-[#E34242] bg-[#E34242]/15 border-[#E34242]/35',
+        accentGlow: '0 0 12px rgba(227,66,66,0.25)',
       };
   }
 }
@@ -109,12 +109,12 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   const displayedActivities = activities.slice(0, limit);
 
   return (
-    <GlassPanel padding="lg" showFlare className={`flex flex-col bg-[var(--surface-primary)] border-[rgba(240,163,82,0.2)] ${className}`}>
+    <GlassPanel padding="lg" showFlare className={`flex flex-col bg-[var(--surface-primary)] border-white/[0.08] ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 mb-4 border-b border-[rgba(240,163,82,0.15)]">
+      <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/[0.08]">
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--accent-primary)] bg-[var(--surface-secondary)] border border-[rgba(240,163,82,0.3)] shadow-[0_0_12px_rgba(240,163,82,0.2)]"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-[#E34242] bg-[var(--surface-secondary)] border border-[#E34242]/35 shadow-[0_0_12px_rgba(227,66,66,0.25)]"
           >
             <Activity className="w-5 h-5" />
           </div>
@@ -126,7 +126,8 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
           </div>
         </div>
 
-        <span className="text-[11px] font-mono px-2.5 py-1 rounded-full text-[var(--accent-primary)] bg-[rgba(240,163,82,0.12)] border border-[rgba(240,163,82,0.3)] font-semibold">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1 rounded-full text-[#E34242] bg-[#E34242]/12 border border-[#E34242]/35 font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#E34242]" />
           Real-Time
         </span>
       </div>
@@ -135,7 +136,8 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
       <motion.div
         variants={containerVariants}
         initial="hidden"
-        animate="show"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.1 }}
         className="space-y-3 flex-1"
       >
         {displayedActivities.map((item) => {
