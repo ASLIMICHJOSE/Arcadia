@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthenticatedUser, JwtPayload } from '../interfaces/jwt-payload.interface';
+import { resolveRequiredSecret } from '../../config/security.config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -14,9 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey:
-        configService.get<string>('JWT_ACCESS_SECRET') ||
-        'arcadia_access_jwt_super_secret_key_prod_2026_983194124',
+      secretOrKey: resolveRequiredSecret(configService, 'JWT_ACCESS_SECRET'),
     });
   }
 
@@ -34,6 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         role: true,
         avatar: true,
         emailVerified: true,
+        tokenVersion: true,
       },
     });
 
@@ -41,7 +41,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Contender account no longer active or exists');
     }
 
-    return user;
+    if (typeof payload.tv === 'number' && payload.tv !== (user.tokenVersion ?? 0)) {
+      throw new UnauthorizedException('Session has been revoked. Please log in again.');
+    }
+
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      emailVerified: user.emailVerified,
+    };
   }
 }
-

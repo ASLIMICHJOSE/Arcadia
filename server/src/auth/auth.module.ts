@@ -5,8 +5,9 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { GoogleStrategy } from './strategies/google.strategy';
+import { GoogleOAuthService } from './strategies/google.strategy';
 import { MailModule } from '../mail/mail.module';
+import { resolveRequiredSecret } from '../config/security.config';
 
 @Module({
   imports: [
@@ -15,9 +16,7 @@ import { MailModule } from '../mail/mail.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret:
-          configService.get<string>('JWT_ACCESS_SECRET') ||
-          'arcadia_access_jwt_super_secret_key_prod_2026_983194124',
+        secret: resolveRequiredSecret(configService, 'JWT_ACCESS_SECRET'),
         signOptions: {
           expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m',
         },
@@ -26,8 +25,7 @@ import { MailModule } from '../mail/mail.module';
     MailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, GoogleStrategy],
-  exports: [AuthService, JwtStrategy, PassportModule, JwtModule],
+  providers: [AuthService, JwtStrategy, GoogleOAuthService],
+  exports: [AuthService, JwtStrategy, GoogleOAuthService, PassportModule, JwtModule],
 })
 export class AuthModule {}
-

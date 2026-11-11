@@ -21,6 +21,7 @@ describe('AuthService (Phase 3 Authentication Core)', () => {
     role: 'USER',
     avatar: null,
     emailVerified: false,
+    tokenVersion: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
     playerProfile: {
@@ -95,7 +96,7 @@ describe('AuthService (Phase 3 Authentication Core)', () => {
       sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
+    const testingModule: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: PrismaService, useValue: prisma },
@@ -105,7 +106,7 @@ describe('AuthService (Phase 3 Authentication Core)', () => {
       ],
     }).compile();
 
-    authService = module.get<AuthService>(AuthService);
+    authService = testingModule.get<AuthService>(AuthService);
   });
 
   // =========================================================================
@@ -394,6 +395,21 @@ describe('AuthService (Phase 3 Authentication Core)', () => {
       expect(prisma.emailVerificationToken.delete).toHaveBeenCalledWith({
         where: { id: mockVerifyRecord.id },
       });
+    });
+  });
+
+  // =========================================================================
+  // 6. GOOGLE OAUTH SECURITY CHECKS
+  // =========================================================================
+  describe('Google OAuth Verification Guard', () => {
+    it('should reject Google OAuth profile when emailVerified is false', async () => {
+      await expect(
+        authService.handleGoogleAuth({
+          providerAccountId: 'google-sub-1',
+          email: 'unverified@example.com',
+          emailVerified: false,
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

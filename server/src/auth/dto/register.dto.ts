@@ -20,6 +20,7 @@ export class RegisterDto {
   @IsString()
   @IsNotEmpty({ message: 'Password is required' })
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
+  @MaxLength(128, { message: 'Password cannot exceed 128 characters' })
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message:
       'Password must contain at least one uppercase letter, one lowercase letter, and one number or special character',
@@ -28,6 +29,7 @@ export class RegisterDto {
 
   @IsString()
   @IsNotEmpty({ message: 'Password confirmation is required' })
+  @MaxLength(128)
   confirmPassword: string;
 }
 

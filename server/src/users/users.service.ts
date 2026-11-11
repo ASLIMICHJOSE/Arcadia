@@ -56,11 +56,13 @@ export class UsersService {
   }
 
   async getAllUsersForAdmin(limit = 50, page = 1) {
-    const skip = (page - 1) * limit;
+    const safeLimit = Math.min(100, Math.max(1, Number.isFinite(limit) ? limit : 50));
+    const safePage = Math.min(10000, Math.max(1, Number.isFinite(page) ? page : 1));
+    const skip = (safePage - 1) * safeLimit;
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
         skip,
-        take: limit,
+        take: safeLimit,
         select: {
           id: true,
           username: true,
@@ -76,7 +78,7 @@ export class UsersService {
       this.prisma.user.count(),
     ]);
 
-    return { users, total, page, limit };
+    return { users, total, page: safePage, limit: safeLimit };
   }
 
   async getAdminStats() {

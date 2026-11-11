@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -14,6 +14,7 @@ import Sidebar from './Sidebar';
 import DashboardHeader from './DashboardHeader';
 import FriendsRail from './FriendsRail';
 import { PageTransition } from '@/components/motion';
+import { authStore } from '@/lib/auth-store';
 import { playBlip } from '@/lib/sound';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +29,29 @@ export function AppShell({ children }: AppShellProps) {
   const isInside = useContext(InsideAppShellContext);
   const pathname = usePathname();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Hydrate authenticated session silently once on mount after OAuth callback or existing session
+  useEffect(() => {
+    if (isInside || typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const hasOAuthReturn = params.get('auth') === 'success';
+    const hasStoredUser = Boolean(localStorage.getItem('arcadia_user'));
+
+    if (hasOAuthReturn) {
+      params.delete('auth');
+      params.delete('token');
+      const cleanedSearch = params.toString();
+      const nextUrl = `${window.location.pathname}${cleanedSearch ? `?${cleanedSearch}` : ''}${window.location.hash}`;
+      window.history.replaceState({}, '', nextUrl);
+    }
+
+    if (hasOAuthReturn || hasStoredUser) {
+      void authStore.checkAuth();
+    } else {
+      authStore.setUser(null);
+    }
+  }, [isInside]);
 
   // If already rendered inside the persistent root shell, bypass duplicate mounting
   if (isInside) {

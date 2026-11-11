@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
+import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { ClientThrottlerGuard } from './common/client-throttler.guard';
+import { RedisThrottlerStorage } from './common/redis-throttler.storage';
 
 @Module({
   imports: [
@@ -14,15 +17,22 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
       isGlobal: true,
       envFilePath: ['.env', '.env.local'],
     }),
+    HealthModule,
     ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => [
-        {
-          ttl: config.get<number>('THROTTLE_TTL', 60) * 1000,
-          limit: config.get<number>('THROTTLE_LIMIT', 15),
-        },
-      ],
+      imports: [ConfigModule, HealthModule],
+      inject: [ConfigService, RedisThrottlerStorage],
+      useFactory: (
+        config: ConfigService,
+        redisStorage: RedisThrottlerStorage,
+      ) => ({
+        throttlers: [
+          {
+            ttl: config.get<number>('THROTTLE_TTL', 60) * 1000,
+            limit: config.get<number>('THROTTLE_LIMIT', 45),
+          },
+        ],
+        storage: redisStorage,
+      }),
     }),
     PrismaModule,
     AuthModule,
@@ -32,7 +42,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: ClientThrottlerGuard,
     },
     {
       provide: APP_GUARD,
@@ -41,4 +51,3 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
   ],
 })
 export class AppModule {}
-

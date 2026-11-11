@@ -28,6 +28,7 @@ import {
   DEMO_ACTIVITY,
   DEMO_LEADERBOARD,
 } from '@/lib/constants';
+import { AuthState, useAuthStore } from '@/lib/auth-store';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -50,6 +51,26 @@ const itemVariants = {
 
 export default function DashboardOverviewPage() {
   const recentlyPlayedGames = FEATURED_GAMES.slice(0, 3);
+  const { user, profile, isAuthenticated } = useAuthStore() as AuthState;
+
+  const activePlayer = isAuthenticated && user
+    ? {
+        ...DEMO_PLAYER,
+        username: user.username,
+        title: profile ? `${profile.rank} • ${profile.title}` : DEMO_PLAYER.title,
+        level: profile?.level ?? 1,
+        xp: profile?.xp ?? 0,
+        avatar: user.avatar || DEMO_PLAYER.avatar,
+      }
+    : DEMO_PLAYER;
+
+  const activeStats = isAuthenticated && profile
+    ? {
+        ...DEMO_STATS,
+        gamesPlayed: profile.matchesPlayed,
+        wins: profile.duelsWon,
+      }
+    : DEMO_STATS;
 
   return (
     <motion.div
@@ -71,15 +92,25 @@ export default function DashboardOverviewPage() {
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight">
             Welcome back,{' '}
             <span className="text-[var(--accent-primary)]">
-              {DEMO_PLAYER.username}
+              {activePlayer.username}
             </span>
           </h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1.5">
-            Your battlefield telemetry is synced. Challenge contenders or climb the seasonal leaderboard.
+            {isAuthenticated
+              ? 'Your authenticated battlefield telemetry is synced across stations.'
+              : 'Local preview mode active. Sign in to sync progression across devices.'}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
+          {!isAuthenticated && (
+            <Link
+              href="/login"
+              className="px-4 py-2 rounded-xl bg-[#E34242] hover:bg-[#C83A35] text-white text-xs font-bold transition-colors shadow-[0_0_12px_rgba(227,66,66,0.3)]"
+            >
+              Sign In to Sync
+            </Link>
+          )}
           <div className="px-4 py-2 rounded-xl bg-[var(--surface-primary)] border border-[rgba(227,66,66,0.3)] shadow-[0_0_12px_rgba(227,66,66,0.15)] flex items-center gap-2 text-xs">
             <Flame size={16} className="text-[var(--accent-primary)]" />
             <span className="text-[var(--text-secondary)]">Daily Streak:</span>
@@ -95,7 +126,7 @@ export default function DashboardOverviewPage() {
       >
         <StatCard
           label="Games Played"
-          value={DEMO_STATS.gamesPlayed}
+          value={activeStats.gamesPlayed}
           icon={Gamepad2}
           trend="+14% this week"
           helperText="Across all active arenas"
@@ -103,7 +134,7 @@ export default function DashboardOverviewPage() {
         />
         <StatCard
           label="Wins"
-          value={DEMO_STATS.wins}
+          value={activeStats.wins}
           icon={Trophy}
           trend={{ value: '74% Win Rate', isUp: true }}
           helperText="Competitive triumph tally"
@@ -111,7 +142,7 @@ export default function DashboardOverviewPage() {
         />
         <StatCard
           label="Total Score"
-          value={new Intl.NumberFormat('en-US').format(DEMO_STATS.totalScore)}
+          value={new Intl.NumberFormat('en-US').format(activeStats.totalScore)}
           icon={Star}
           trend="+2,450 pts"
           helperText="Frontier prestige score"
@@ -119,7 +150,7 @@ export default function DashboardOverviewPage() {
         />
         <StatCard
           label="Playtime"
-          value={DEMO_STATS.playtime}
+          value={activeStats.playtime}
           icon={Clock}
           trend="+6h this week"
           helperText="Total arena immersion"
@@ -166,8 +197,8 @@ export default function DashboardOverviewPage() {
         {/* Right Column: Player Profile (5 cols) */}
         <div className="lg:col-span-5">
           <PlayerProfile
-            player={DEMO_PLAYER}
-            stats={DEMO_STATS}
+            player={activePlayer}
+            stats={activeStats}
           />
         </div>
       </CyberReveal>

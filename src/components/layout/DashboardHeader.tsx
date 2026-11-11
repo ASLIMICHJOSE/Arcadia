@@ -19,6 +19,7 @@ import {
 import { playBlip } from '@/lib/sound';
 import { cn } from '@/lib/utils';
 import { getCurrentUser, clearUserSession, getDynamicGreeting, UserSession } from '@/lib/auth';
+import { authStore, AuthState, useAuthStore } from '@/lib/auth-store';
 import { useGamepad } from '@/lib/gamepad';
 import { triggerHaptic } from '@/lib/haptics';
 
@@ -50,16 +51,31 @@ export function DashboardHeader({
   // HTML5 Gamepad connection state
   const gamepad = useGamepad();
 
+  const authState = useAuthStore() as AuthState;
+
   // Dynamic user session and greeting state
-  const [user, setUser] = useState<UserSession>({ username: 'CONTENDER', isLoggedIn: false });
+  const [storedUser, setStoredUser] = useState<UserSession>({ username: 'CONTENDER', isLoggedIn: false });
   const [greeting, setGreeting] = useState<string>('Good evening');
 
+  const user: UserSession = authState.isAuthenticated && authState.user
+    ? {
+        username: authState.user.username,
+        email: authState.user.email,
+        isLoggedIn: true,
+      }
+    : storedUser;
+
   useEffect(() => {
-    setUser(getCurrentUser());
+    setStoredUser(getCurrentUser());
     setGreeting(getDynamicGreeting());
 
     const handleAuthChange = () => {
-      setUser(getCurrentUser());
+      setStoredUser(getCurrentUser());
+    };
+
+    const handleSessionExpired = () => {
+      clearUserSession();
+      setStoredUser({ username: 'CONTENDER', isLoggedIn: false });
     };
 
     const handleFullscreenChange = () => {
@@ -67,11 +83,13 @@ export function DashboardHeader({
     };
 
     window.addEventListener('arcadia_auth_change', handleAuthChange);
+    window.addEventListener('arcadia_session_expired', handleSessionExpired);
     window.addEventListener('storage', handleAuthChange);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
 
     return () => {
       window.removeEventListener('arcadia_auth_change', handleAuthChange);
+      window.removeEventListener('arcadia_session_expired', handleSessionExpired);
       window.removeEventListener('storage', handleAuthChange);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
@@ -91,12 +109,12 @@ export function DashboardHeader({
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     triggerHaptic('medium');
-    clearUserSession();
     setProfileOpen(false);
-    setUser({ username: 'CONTENDER', isLoggedIn: false });
+    setStoredUser({ username: 'CONTENDER', isLoggedIn: false });
     playBlip();
+    await authStore.logout();
     router.push('/login');
   };
 

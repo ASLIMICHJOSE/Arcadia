@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { apiClient, setAccessToken, getAccessToken } from './api';
+import { apiClient, setAccessToken } from './api';
 import { saveUserSession, clearUserSession } from './auth';
 
 export interface User {
@@ -33,7 +33,6 @@ export interface AuthState {
   error: string | null;
 }
 
-// In-memory store state
 let state: AuthState = {
   user: null,
   profile: null,
@@ -42,6 +41,7 @@ let state: AuthState = {
   error: null,
 };
 
+let inFlightCheckAuth: Promise<void> | null = null;
 const listeners = new Set<() => void>();
 
 function emitChange() {
@@ -53,6 +53,12 @@ function emitChange() {
 function updateState(partial: Partial<AuthState>) {
   state = { ...state, ...partial };
   emitChange();
+}
+
+function purgeServiceWorkerPrivateCache() {
+  if (typeof navigator !== 'undefined' && navigator.serviceWorker?.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_PRIVATE_CACHE' });
+  }
 }
 
 export const authStore = {
@@ -101,13 +107,19 @@ export const authStore = {
       setAccessToken(data.accessToken);
       authStore.setUser(data.user, data.profile);
       return data;
-    } catch (err: any) {
-      updateState({ isLoading: false, error: err.message || 'Login failed' });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Login failed';
+      updateState({ isLoading: false, error: msg });
       throw err;
     }
   },
 
-  register: async (username: string, email: string, password: string, confirmPassword: string) => {
+  register: async (
+    username: string,
+    email: string,
+    password: string,
+    confirmPassword: string,
+  ) => {
     updateState({ isLoading: true, error: null });
     try {
       const data = await apiClient<{
@@ -120,42 +132,57 @@ export const authStore = {
 
       updateState({ isLoading: false, error: null });
       return data;
-    } catch (err: any) {
-      updateState({ isLoading: false, error: err.message || 'Registration failed' });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Registration failed';
+      updateState({ isLoading: false, error: msg });
       throw err;
     }
   },
 
-  checkAuth: async () => {
-    // Only run on client
+  /**
+   * Deduplicated silent session bootstrap using HTTP-only refresh cookie.
+   * Prevents parallel mounts from racing one-time rotated refresh tokens.
+   */
+  checkAuth: async (force = false) => {
     if (typeof window === 'undefined') return;
-
-    updateState({ isLoading: true });
-    try {
-      // First try silent refresh with HTTP-only cookie
-      const refreshRes = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-
-      if (refreshRes.ok) {
-        const refreshData = await refreshRes.json();
-        setAccessToken(refreshData.accessToken);
-
-        // Fetch user profile and game stats
-        const meData = await apiClient<{
-          user: User;
-          profile: PlayerProfile;
-        }>('/auth/me');
-
-        authStore.setUser(meData.user, meData.profile);
-      } else {
-        authStore.setUser(null);
-      }
-    } catch {
-      authStore.setUser(null);
+    if (inFlightCheckAuth && !force) {
+      return inFlightCheckAuth;
     }
+
+    const runner = (async () => {
+      updateState({ isLoading: true });
+      try {
+        const refreshRes = await fetch('/api/auth/refresh', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'fetch',
+          },
+          credentials: 'include',
+        });
+
+        if (refreshRes.ok) {
+          const refreshData = await refreshRes.json();
+          setAccessToken(refreshData.accessToken);
+
+          const meData = await apiClient<{
+            user: User;
+            profile: PlayerProfile;
+          }>('/auth/me');
+
+          authStore.setUser(meData.user, meData.profile);
+        } else {
+          authStore.setUser(null);
+        }
+      } catch {
+        authStore.setUser(null);
+      } finally {
+        inFlightCheckAuth = null;
+      }
+    })();
+
+    inFlightCheckAuth = runner;
+    return runner;
   },
 
   logout: async () => {
@@ -165,9 +192,7 @@ export const authStore = {
       // ignore logout network errors
     } finally {
       authStore.setUser(null);
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
+      purgeServiceWorkerPrivateCache();
     }
   },
 
@@ -186,7 +211,9 @@ export const authStore = {
   },
 
   verifyEmail: async (token: string) => {
-    return apiClient<{ message: string }>(`/auth/verify-email?token=${encodeURIComponent(token)}`);
+    return apiClient<{ message: string }>(
+      `/auth/verify-email?token=${encodeURIComponent(token)}`,
+    );
   },
 
   resendVerification: async (email: string) => {
@@ -197,14 +224,12 @@ export const authStore = {
   },
 };
 
-// React Hook (Zustand style selector pattern)
 export function useAuthStore<T>(selector?: (state: AuthState) => T): T | AuthState {
   const current = useSyncExternalStore(
     authStore.subscribe,
     authStore.getState,
-    () => state, // SSR fallback
+    () => state,
   );
 
   return selector ? selector(current) : current;
 }
-

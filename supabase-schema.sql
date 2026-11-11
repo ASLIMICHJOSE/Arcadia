@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS "User" (
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "emailVerifiedAt" TIMESTAMP(3),
     "role" "Role" NOT NULL DEFAULT 'USER',
+    "tokenVersion" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -180,5 +181,80 @@ DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'PlayerProfile_userId_fkey') THEN
         ALTER TABLE "PlayerProfile" ADD CONSTRAINT "PlayerProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
     END IF;
+END $$;
+
+-- =============================================================================
+-- SECURITY & SCALABILITY HARDENING (RLS, TRIGGERS, COMPOSITE INDEXES)
+-- =============================================================================
+
+-- Backfill "tokenVersion" safely if "User" already existed before this update
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "tokenVersion" INTEGER NOT NULL DEFAULT 0;
+
+-- Composite indexes for rapid session / token revocation & expired row pruning
+CREATE INDEX IF NOT EXISTS "Session_userId_expiresAt_idx" ON "Session"("userId", "expiresAt");
+CREATE INDEX IF NOT EXISTS "RefreshToken_userId_revoked_expiresAt_idx" ON "RefreshToken"("userId", "revoked", "expiresAt");
+
+-- Automatic updatedAt timestamp maintenance
+CREATE OR REPLACE FUNCTION public.arcadia_set_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW."updatedAt" = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$;
+
+DO $$
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOREACH tbl IN ARRAY ARRAY['User', 'Account', 'Session', 'RefreshToken', 'PlayerProfile']
+    LOOP
+        EXECUTE format('DROP TRIGGER IF EXISTS %I ON %I', tbl || '_set_updated_at', tbl);
+        EXECUTE format(
+            'CREATE TRIGGER %I BEFORE UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION public.arcadia_set_updated_at()',
+            tbl || '_set_updated_at',
+            tbl
+        );
+    END LOOP;
+END $$;
+
+-- Lock down all Prisma/auth tables against direct browser access via Supabase PostgREST (anon / authenticated)
+ALTER TABLE "User" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Account" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Session" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "RefreshToken" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "EmailVerificationToken" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "PasswordResetToken" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "PlayerProfile" ENABLE ROW LEVEL SECURITY;
+
+DO $$
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOREACH tbl IN ARRAY ARRAY[
+        'User',
+        'Account',
+        'Session',
+        'RefreshToken',
+        'EmailVerificationToken',
+        'PasswordResetToken',
+        'PlayerProfile'
+    ]
+    LOOP
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+            EXECUTE format('REVOKE ALL ON TABLE %I FROM anon', tbl);
+        END IF;
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+            EXECUTE format('REVOKE ALL ON TABLE %I FROM authenticated', tbl);
+        END IF;
+        EXECUTE format('DROP POLICY IF EXISTS %I ON %I', 'deny_public_access_' || tbl, tbl);
+        EXECUTE format(
+            'CREATE POLICY %I ON %I AS RESTRICTIVE FOR ALL TO PUBLIC USING (false) WITH CHECK (false)',
+            'deny_public_access_' || tbl,
+            tbl
+        );
+    END LOOP;
 END $$;
 

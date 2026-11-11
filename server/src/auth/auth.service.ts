@@ -4,6 +4,8 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  OnModuleDestroy,
+  OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -16,11 +18,17 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthenticatedUser, JwtPayload } from './interfaces/jwt-payload.interface';
+import { resolveRequiredSecret } from '../config/security.config';
+
+// Valid pre-computed bcrypt cost-12 hash used for constant-time login mitigation when account does not exist
+const DUMMY_PASSWORD_HASH =
+  '$2b$12$C6UzMDM.H6dfI/f/IKxGhu5i0E2l5kV6x4uP4r9W0w8s7V6k6mY6.';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AuthService.name);
   private readonly saltRounds = 12;
+  private cleanupTimer: NodeJS.Timeout | null = null;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -28,6 +36,43 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
   ) {}
+
+  onModuleInit(): void {
+    // Skip periodic background timer under unit-test runners
+    if (process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID) return;
+
+    this.cleanupTimer = setInterval(() => {
+      this.purgeExpiredAuthRecords().catch((err: Error) => {
+        this.logger.warn(`Auth housekeeping skipped: ${err.message}`);
+      });
+    }, 60 * 60 * 1000); // hourly expired session / token purge
+
+    if (typeof this.cleanupTimer.unref === 'function') {
+      this.cleanupTimer.unref();
+    }
+  }
+
+  onModuleDestroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
+  }
+
+  private async purgeExpiredAuthRecords(): Promise<void> {
+    const now = new Date();
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    await Promise.all([
+      this.prisma.session.deleteMany?.({ where: { expiresAt: { lt: now } } }),
+      this.prisma.emailVerificationToken.deleteMany?.({ where: { expiresAt: { lt: now } } }),
+      this.prisma.passwordResetToken.deleteMany?.({
+        where: { OR: [{ expiresAt: { lt: now } }, { used: true, createdAt: { lt: weekAgo } }] },
+      }),
+      this.prisma.refreshToken.deleteMany?.({
+        where: { OR: [{ expiresAt: { lt: now } }, { revoked: true, updatedAt: { lt: weekAgo } }] },
+      }),
+    ]);
+  }
 
   // ---------------------------------------------------------------------------
   // Helper: SHA-256 Cryptographic Hash for Tokens (never store raw tokens in DB)
@@ -58,7 +103,6 @@ export class AuthService {
       throw new BadRequestException('Passwords do not match');
     }
 
-    // Check username availability
     const existingUsername = await this.prisma.user.findUnique({
       where: { username: dto.username },
     });
@@ -66,7 +110,6 @@ export class AuthService {
       throw new ConflictException('Username is already taken by another contender');
     }
 
-    // Check email uniqueness
     const existingEmail = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -74,12 +117,17 @@ export class AuthService {
       throw new ConflictException('An account with this email address already exists');
     }
 
-    // Hash password with bcrypt
     const passwordHash = await bcrypt.hash(dto.password, this.saltRounds);
 
+    let createdUser: any;
+    let rawVerificationToken: string;
+
     try {
-      // Transaction: create User and PlayerProfile together
-      const user = await this.prisma.$transaction(async (tx) => {
+      rawVerificationToken = crypto.randomBytes(32).toString('hex');
+      const hashedToken = this.hashToken(rawVerificationToken);
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      createdUser = await this.prisma.$transaction(async (tx) => {
         const newUser = await tx.user.create({
           data: {
             username: dto.username,
@@ -90,7 +138,6 @@ export class AuthService {
           },
         });
 
-        // Initialize Arcadia player progression profile
         await tx.playerProfile.create({
           data: {
             userId: newUser.id,
@@ -107,31 +154,40 @@ export class AuthService {
         return newUser;
       });
 
-      // Generate verification token (32 bytes raw)
-      const rawVerificationToken = crypto.randomBytes(32).toString('hex');
-      const hashedToken = this.hashToken(rawVerificationToken);
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
       await this.prisma.emailVerificationToken.create({
         data: {
           hashedToken,
-          email: user.email,
-          userId: user.id,
+          email: createdUser.email,
+          userId: createdUser.id,
           expiresAt,
         },
       });
-
-      // Dispatch verification email (or log safely in dev)
-      await this.mailService.sendVerificationEmail(user.email, rawVerificationToken, user.username);
-
-      return {
-        message: 'Account successfully registered. Please verify your email address to unlock full features.',
-        user: this.sanitizeUser(user),
-      };
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.code === 'P2002') {
+        throw new ConflictException('Username or email is already registered');
+      }
       this.logger.error(`Registration error for ${dto.email}: ${(error as Error).message}`);
       throw new InternalServerErrorException('Failed to complete registration sequence');
     }
+
+    // Dispatch verification email outside transaction catch so mail issues never break user creation
+    try {
+      await this.mailService.sendVerificationEmail(
+        createdUser.email,
+        rawVerificationToken,
+        createdUser.username,
+      );
+    } catch (mailErr) {
+      this.logger.warn(
+        `Verification email dispatch deferred for ${createdUser.email}: ${(mailErr as Error).message}`,
+      );
+    }
+
+    return {
+      message:
+        'Account successfully registered. Please verify your email address to unlock full features.',
+      user: this.sanitizeUser(createdUser),
+    };
   }
 
   // ---------------------------------------------------------------------------
@@ -152,16 +208,14 @@ export class AuthService {
       include: { playerProfile: true },
     });
 
-    if (!user || !user.passwordHash) {
+    // Perform constant-time bcrypt comparison even when user is absent
+    const candidateHash = user?.passwordHash || DUMMY_PASSWORD_HASH;
+    const isPasswordValid = await bcrypt.compare(dto.password, candidateHash);
+
+    if (!user || !user.passwordHash || !isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid email or password credentials');
-    }
-
-    // Issue tokens & session
     const tokens = await this.createTokensAndSession(user, userAgent, ipAddress);
 
     return {
@@ -190,8 +244,6 @@ export class AuthService {
       include: { user: true },
     });
 
-    // Token reuse detection:
-    // If token not found or already revoked, an adversary may have stolen or reused an old token.
     if (!tokenRecord) {
       throw new UnauthorizedException('Invalid refresh token');
     }
@@ -200,21 +252,26 @@ export class AuthService {
       this.logger.warn(
         `[SECURITY ALERT] Refresh token reuse detected for user ${tokenRecord.userId}! Revoking token family: ${tokenRecord.family}`,
       );
-      // Revoke all tokens belonging to this compromised token family
       await this.prisma.refreshToken.updateMany({
         where: { family: tokenRecord.family },
         data: { revoked: true },
       });
-      // Invalidate active sessions
       await this.prisma.session.deleteMany({
         where: { userId: tokenRecord.userId },
       });
+      // Increment tokenVersion if present in DB schema to invalidate active JWT access tokens immediately
+      await this.prisma.user
+        .update?.({
+          where: { id: tokenRecord.userId },
+          data: { tokenVersion: { increment: 1 } },
+        })
+        ?.catch(() => undefined);
+
       throw new UnauthorizedException(
         'Compromised session sequence detected. All sessions have been revoked for your security. Please log in again.',
       );
     }
 
-    // Expiration check
     if (tokenRecord.expiresAt < new Date()) {
       await this.prisma.refreshToken.update({
         where: { id: tokenRecord.id },
@@ -223,19 +280,16 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token has expired. Please log in again.');
     }
 
-    // Revoke the current refresh token (one-time use rotation)
     await this.prisma.refreshToken.update({
       where: { id: tokenRecord.id },
       data: { revoked: true },
     });
 
-    // Generate new access token
     const newAccessToken = this.generateAccessToken(tokenRecord.user);
 
-    // Generate new refresh token within the same token family
     const newRawRefreshToken = crypto.randomBytes(40).toString('hex');
     const newHashedToken = this.hashToken(newRawRefreshToken);
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     await this.prisma.refreshToken.create({
       data: {
@@ -247,7 +301,6 @@ export class AuthService {
       },
     });
 
-    // Update active session metadata
     if (userAgent || ipAddress) {
       await this.prisma.session.create({
         data: {
@@ -268,15 +321,18 @@ export class AuthService {
   }
 
   // ---------------------------------------------------------------------------
-  // 4. LOGOUT (Revoke Refresh Token & Remove Session)
+  // 4. LOGOUT (Revoke Refresh Token Family, Session & Active JWT Version)
   // ---------------------------------------------------------------------------
   async logout(rawRefreshToken?: string, userId?: string): Promise<{ message: string }> {
+    let targetUserId = userId;
+
     if (rawRefreshToken) {
       const hashedToken = this.hashToken(rawRefreshToken);
       const token = await this.prisma.refreshToken.findUnique({
         where: { hashedToken },
       });
       if (token) {
+        targetUserId = targetUserId || token.userId;
         await this.prisma.refreshToken.updateMany({
           where: { family: token.family },
           data: { revoked: true },
@@ -284,10 +340,16 @@ export class AuthService {
       }
     }
 
-    if (userId) {
+    if (targetUserId) {
       await this.prisma.session.deleteMany({
-        where: { userId },
+        where: { userId: targetUserId },
       });
+      await this.prisma.user
+        .update?.({
+          where: { id: targetUserId },
+          data: { tokenVersion: { increment: 1 } },
+        })
+        ?.catch(() => undefined);
     }
 
     return { message: 'Logged out successfully' };
@@ -316,7 +378,6 @@ export class AuthService {
       throw new BadRequestException('Verification token has expired. Please request a new link.');
     }
 
-    // Mark email as verified
     await this.prisma.user.update({
       where: { email: tokenRecord.email },
       data: {
@@ -325,7 +386,6 @@ export class AuthService {
       },
     });
 
-    // Delete used token
     await this.prisma.emailVerificationToken.delete({ where: { id: tokenRecord.id } });
 
     return { message: 'Contender email address has been successfully verified' };
@@ -334,19 +394,22 @@ export class AuthService {
   async resendVerification(email: string): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
-    // Protect against account enumeration: return uniform success message
     if (!user) {
-      return { message: 'If this email belongs to a contender account, a verification link has been dispatched.' };
+      return {
+        message:
+          'If this email belongs to a contender account, a verification link has been dispatched.',
+      };
     }
 
     if (user.emailVerified) {
-      return { message: 'This email address is already verified.' };
+      return {
+        message:
+          'If this email belongs to a contender account, a verification link has been dispatched.',
+      };
     }
 
-    // Clear old tokens for this email
     await this.prisma.emailVerificationToken.deleteMany({ where: { email } });
 
-    // Generate new token
     const rawVerificationToken = crypto.randomBytes(32).toString('hex');
     const hashedToken = this.hashToken(rawVerificationToken);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -362,7 +425,10 @@ export class AuthService {
 
     await this.mailService.sendVerificationEmail(user.email, rawVerificationToken, user.username);
 
-    return { message: 'If this email belongs to a contender account, a verification link has been dispatched.' };
+    return {
+      message:
+        'If this email belongs to a contender account, a verification link has been dispatched.',
+    };
   }
 
   // ---------------------------------------------------------------------------
@@ -371,17 +437,17 @@ export class AuthService {
   async forgotPassword(email: string): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
-    // Critical security: Never reveal if an email exists
     if (!user) {
-      return { message: 'If an account exists for this email, password reset instructions have been sent.' };
+      return {
+        message:
+          'If an account exists for this email, password reset instructions have been sent.',
+      };
     }
 
-    // Invalidate existing unused tokens for this user
     await this.prisma.passwordResetToken.deleteMany({
       where: { userId: user.id },
     });
 
-    // Generate 32-byte raw token and store hash
     const rawResetToken = crypto.randomBytes(32).toString('hex');
     const hashedToken = this.hashToken(rawResetToken);
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
@@ -397,7 +463,10 @@ export class AuthService {
 
     await this.mailService.sendPasswordResetEmail(user.email, rawResetToken);
 
-    return { message: 'If an account exists for this email, password reset instructions have been sent.' };
+    return {
+      message:
+        'If an account exists for this email, password reset instructions have been sent.',
+    };
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
@@ -415,17 +484,20 @@ export class AuthService {
     }
 
     if (tokenRecord.expiresAt < new Date()) {
-      throw new BadRequestException('Password reset token has expired. Please initiate a new request.');
+      throw new BadRequestException(
+        'Password reset token has expired. Please initiate a new request.',
+      );
     }
 
-    // Hash new password
     const passwordHash = await bcrypt.hash(dto.newPassword, this.saltRounds);
 
-    // Update password & mark token as used
     await this.prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: tokenRecord.userId },
-        data: { passwordHash },
+        data: {
+          passwordHash,
+          tokenVersion: { increment: 1 },
+        },
       });
 
       await tx.passwordResetToken.update({
@@ -433,7 +505,6 @@ export class AuthService {
         data: { used: true },
       });
 
-      // Session revocation after password reset: Invalidate ALL refresh tokens & sessions
       await tx.refreshToken.updateMany({
         where: { userId: tokenRecord.userId },
         data: { revoked: true },
@@ -445,7 +516,8 @@ export class AuthService {
     });
 
     return {
-      message: 'Password successfully updated. All active sessions have been revoked. Please log in with your new credentials.',
+      message:
+        'Password successfully updated. All active sessions have been revoked. Please log in with your new credentials.',
     };
   }
 
@@ -453,18 +525,23 @@ export class AuthService {
   // 7. GOOGLE OAUTH 2.0 / ACCOUNT LINKING
   // ---------------------------------------------------------------------------
   async handleGoogleAuth(
-    googleUser: any,
+    googleUser: {
+      providerAccountId: string;
+      email: string;
+      emailVerified: boolean;
+      displayName?: string;
+      avatar?: string | null;
+    },
     userAgent?: string,
     ipAddress?: string,
   ): Promise<{ accessToken: string; refreshToken: string; user: AuthenticatedUser }> {
-    const { providerAccountId, email, displayName, avatar, accessToken: googleAccessToken, refreshToken: googleRefreshToken } = googleUser;
+    const { providerAccountId, email, emailVerified, displayName, avatar } = googleUser;
 
-    if (!email) {
-      throw new BadRequestException('Google account did not provide an email address');
+    if (!email || !emailVerified) {
+      throw new BadRequestException('Verified Google email address is required');
     }
 
-    // Check if account link already exists
-    let account = await this.prisma.account.findUnique({
+    const account = await this.prisma.account.findUnique({
       where: {
         provider_providerAccountId: {
           provider: 'google',
@@ -479,25 +556,20 @@ export class AuthService {
     if (account) {
       targetUser = account.user;
     } else {
-      // Check if user exists by email (Safe account linking)
       targetUser = await this.prisma.user.findUnique({
         where: { email },
       });
 
       if (targetUser) {
-        // Link Google provider account to existing user
         await this.prisma.account.create({
           data: {
             userId: targetUser.id,
             type: 'oauth',
             provider: 'google',
             providerAccountId,
-            accessToken: googleAccessToken,
-            refreshToken: googleRefreshToken,
           },
         });
 
-        // If email was not verified, verify it since Google verified it
         if (!targetUser.emailVerified) {
           targetUser = await this.prisma.user.update({
             where: { id: targetUser.id },
@@ -505,16 +577,26 @@ export class AuthService {
           });
         }
       } else {
-        // Create brand new user + PlayerProfile + Account link
-        const baseUsername = displayName
-          ? displayName.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 15)
-          : email.split('@')[0].slice(0, 15);
-        const uniqueUsername = `${baseUsername || 'Contender'}_${Math.floor(1000 + Math.random() * 9000)}`;
+        const baseUsername = (
+          displayName
+            ? displayName.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 14)
+            : email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 14)
+        ) || 'Contender';
 
         targetUser = await this.prisma.$transaction(async (tx) => {
+          let chosenUsername = `${baseUsername}_${crypto.randomBytes(2).toString('hex')}`;
+          for (let attempt = 0; attempt < 5; attempt++) {
+            const exists = await tx.user.findUnique({
+              where: { username: chosenUsername },
+              select: { id: true },
+            });
+            if (!exists) break;
+            chosenUsername = `${baseUsername}_${crypto.randomBytes(3).toString('hex')}`;
+          }
+
           const newUser = await tx.user.create({
             data: {
-              username: uniqueUsername,
+              username: chosenUsername,
               email,
               avatar: avatar || null,
               role: 'USER',
@@ -542,8 +624,6 @@ export class AuthService {
               type: 'oauth',
               provider: 'google',
               providerAccountId,
-              accessToken: googleAccessToken,
-              refreshToken: googleRefreshToken,
             },
           });
 
@@ -569,11 +649,10 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      tv: user.tokenVersion ?? 0,
     };
 
-    const secret =
-      this.configService.get<string>('JWT_ACCESS_SECRET') ||
-      'arcadia_access_jwt_super_secret_key_prod_2026_983194124';
+    const secret = resolveRequiredSecret(this.configService, 'JWT_ACCESS_SECRET');
     const expiresIn = this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m';
 
     return this.jwtService.sign(payload, { secret, expiresIn });
@@ -586,11 +665,10 @@ export class AuthService {
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const accessToken = this.generateAccessToken(user);
 
-    // Cryptographic Refresh Token
     const rawRefreshToken = crypto.randomBytes(40).toString('hex');
     const hashedToken = this.hashToken(rawRefreshToken);
     const family = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     await this.prisma.refreshToken.create({
       data: {
@@ -602,7 +680,6 @@ export class AuthService {
       },
     });
 
-    // Create active Session record
     await this.prisma.session.create({
       data: {
         sessionToken: crypto.randomUUID(),
@@ -616,4 +693,3 @@ export class AuthService {
     return { accessToken, refreshToken: rawRefreshToken };
   }
 }
-

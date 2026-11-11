@@ -17,11 +17,13 @@ import {
 import { CyberReveal } from '@/components/motion';
 import { DEMO_PLAYER } from '@/lib/constants';
 import { getCurrentUser, UserSession } from '@/lib/auth';
+import { AuthState, authStore, useAuthStore } from '@/lib/auth-store';
 import { playBlip } from '@/lib/sound';
 import { isHapticsEnabled, setHapticsEnabled, triggerHaptic } from '@/lib/haptics';
 
 export default function SettingsPage() {
-  const [user, setUser] = useState<UserSession>({ username: 'CONTENDER', isLoggedIn: false });
+  const auth = useAuthStore() as AuthState;
+  const [storedUser, setStoredUser] = useState<UserSession>({ username: 'CONTENDER', isLoggedIn: false });
   const [notifications, setNotifications] = useState(true);
   const [soundEffects, setSoundEffects] = useState(true);
   const [haptics, setHaptics] = useState(isHapticsEnabled());
@@ -29,8 +31,17 @@ export default function SettingsPage() {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const user = auth.isAuthenticated && auth.user
+    ? {
+        username: auth.user.username,
+        email: auth.user.email,
+        isLoggedIn: true,
+        emailVerified: auth.user.emailVerified,
+      }
+    : { ...storedUser, emailVerified: false };
+
   useEffect(() => {
-    setUser(getCurrentUser());
+    setStoredUser(getCurrentUser());
     setHaptics(isHapticsEnabled());
   }, []);
 
@@ -42,8 +53,48 @@ export default function SettingsPage() {
     }, 3500);
   };
 
-  const handleClearCache = () => {
-    triggerFeedback('Offline cache refreshed & synchronized (3.2 MB re-verified).');
+  const handleClearCache = async () => {
+    try {
+      if (typeof window !== 'undefined' && 'caches' in window) {
+        const keys = await caches.keys();
+        const stale = keys.filter((k) => !k.startsWith('arcadia-v3'));
+        await Promise.all(stale.map((k) => caches.delete(k)));
+        triggerFeedback(
+          `Offline cache verified (${keys.length - stale.length} active store${keys.length - stale.length === 1 ? '' : 's'}).`,
+        );
+        return;
+      }
+    } catch {
+      // ignore CacheStorage error
+    }
+    triggerFeedback('Offline cache synchronized.');
+  };
+
+  const handleChangeKey = async () => {
+    if (!auth.isAuthenticated || !auth.user?.email) {
+      triggerFeedback('Sign in to dispatch a security password reset link.');
+      return;
+    }
+    try {
+      const res = await authStore.forgotPassword(auth.user.email);
+      triggerFeedback(res.message || 'Password recovery instructions dispatched.');
+    } catch {
+      triggerFeedback('If an account exists for this email, reset instructions have been sent.');
+    }
+  };
+
+  const handleStationReset = async () => {
+    setShowDeleteConfirm(false);
+    try {
+      localStorage.removeItem('arcadia_telemetry');
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch {
+      // ignore storage failure
+    }
+    triggerFeedback('Local station cache & telemetry purged.');
   };
 
   return (
@@ -129,7 +180,7 @@ export default function SettingsPage() {
                 <label className="text-[11px] font-mono uppercase tracking-wider text-[#C7A9A3] flex items-center justify-between">
                   <span>Dispatch Email</span>
                   <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold">
-                    <ShieldCheck size={11} /> Verified
+                    <ShieldCheck size={11} /> {user.emailVerified ? 'Verified' : user.isLoggedIn ? 'Unverified' : 'Local'}
                   </span>
                 </label>
                 <input
@@ -144,10 +195,10 @@ export default function SettingsPage() {
             {/* Badges */}
             <div className="pt-2 flex flex-wrap items-center gap-2.5 text-xs">
               <span className="px-3 py-1 rounded-xl bg-[#1C0A0A] border border-white/10 text-[#C7A9A3]">
-                Title: <strong className="text-[#E34242] font-heading">{DEMO_PLAYER.title}</strong>
+                Title: <strong className="text-[#E34242] font-heading">{auth.profile?.title || DEMO_PLAYER.title}</strong>
               </span>
               <span className="px-3 py-1 rounded-xl bg-[#1C0A0A] border border-white/10 text-[#C7A9A3]">
-                Level: <strong className="text-white font-mono">{DEMO_PLAYER.level}</strong>
+                Level: <strong className="text-white font-mono">{auth.profile?.level ?? DEMO_PLAYER.level}</strong>
               </span>
               <span className="px-3 py-1 rounded-xl bg-[#1C0A0A] border border-white/10 text-[#C7A9A3]">
                 Enlisted: <strong className="text-white">{DEMO_PLAYER.joinDate}</strong>
@@ -309,7 +360,7 @@ export default function SettingsPage() {
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => triggerFeedback('Security password reset link dispatched.')}
+                onClick={handleChangeKey}
                 className="w-full py-2.5 px-4 rounded-xl bg-[#1C0A0A] hover:bg-[#351414] border border-white/10 text-xs font-semibold text-white hover:border-[#E34242] transition-all text-left flex items-center justify-between cursor-pointer"
               >
                 <span>Change Station Key</span>
@@ -334,10 +385,7 @@ export default function SettingsPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setShowDeleteConfirm(false);
-                        triggerFeedback('Station data purged. Resetting session...');
-                      }}
+                      onClick={handleStationReset}
                       className="px-3.5 py-1 text-xs font-bold rounded-xl bg-[#E34242] text-white hover:bg-[#C83A35] transition-colors shadow-md"
                     >
                       Confirm Reset

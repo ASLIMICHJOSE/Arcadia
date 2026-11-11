@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -19,33 +19,58 @@ import AppShell from '@/components/layout/AppShell';
 import { playBlip, playEngage } from '@/lib/sound';
 import { authStore } from '@/lib/auth-store';
 
+const subscribeNoop = () => () => {};
+
+function getSafeNextRedirect(search: string): string {
+  const next = new URLSearchParams(search).get('next');
+  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard';
+}
+
+function getOAuthErrorMessage(search: string): string | null {
+  const oauthErr = new URLSearchParams(search).get('error');
+  if (oauthErr === 'oauth_failed') {
+    return 'Google authentication failed verification. Please try again.';
+  }
+  if (oauthErr === 'oauth_cancelled') {
+    return 'Google sign-in was cancelled or incomplete.';
+  }
+  return null;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const search = useSyncExternalStore(
+    subscribeNoop,
+    () => window.location.search,
+    () => '',
+  );
+
+  const redirectNext = getSafeNextRedirect(search);
+  const errorMessage = submitError || getOAuthErrorMessage(search);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(null);
+    setSubmitError(null);
     setLoading(true);
     playEngage();
 
     try {
       await authStore.login(email, password);
-      router.push('/dashboard');
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Invalid email or security key. Please check your credentials.');
+      router.push(redirectNext);
+    } catch (err: unknown) {
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : 'Invalid email or security key. Please check your credentials.',
+      );
       setLoading(false);
     }
-  };
-
-  const handleGoogleLogin = () => {
-    playEngage();
-    // Redirect to backend Google OAuth 2.0 flow
-    window.location.href = '/api/auth/google';
   };
 
   return (
@@ -89,10 +114,10 @@ export default function LoginPage() {
               </motion.div>
             )}
 
-            {/* Google OAuth Login Button */}
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
+            {/* Google OAuth Login Link */}
+            <a
+              href="/api/auth/google"
+              onClick={() => playEngage()}
               className="w-full py-2.5 px-4 rounded-xl bg-[#1C0A0A] hover:bg-[#220C0C] border border-white/10 hover:border-white/20 text-white text-xs font-bold transition-all flex items-center justify-center gap-3 mb-4 cursor-pointer shadow-sm"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -114,7 +139,7 @@ export default function LoginPage() {
                 />
               </svg>
               <span>Continue with Google</span>
-            </button>
+            </a>
 
             {/* Divider */}
             <div className="relative flex items-center justify-center my-4">

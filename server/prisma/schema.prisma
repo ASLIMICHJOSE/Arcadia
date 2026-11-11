@@ -22,6 +22,7 @@ model User {
   emailVerified           Boolean                  @default(false)
   emailVerifiedAt         DateTime?
   role                    Role                     @default(USER)
+  tokenVersion            Int                      @default(0)
   accounts                Account[]
   sessions                Session[]
   refreshTokens           RefreshToken[]
@@ -69,6 +70,7 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
+  @@index([userId, expiresAt])
 }
 
 model RefreshToken {
@@ -85,6 +87,7 @@ model RefreshToken {
   @@index([userId])
   @@index([family])
   @@index([expiresAt])
+  @@index([userId, revoked, expiresAt])
 }
 
 model EmailVerificationToken {
